@@ -141,12 +141,8 @@ export class AuthService {
     // Delete OTP from Redis after successful verification
     await this.redisService.del(`otp:${dto.email}`);
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    this.logger.debug(
-      `Signing verify token for ${user.email} with payload: ${JSON.stringify(payload)}`,
-    );
     return {
-      accessToken: this.jwtService.sign(payload),
+      message: 'Email verified successfully. You can now login.',
     };
   }
 

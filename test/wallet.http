@@ -61,7 +61,7 @@ Content-Type: application/json
 
 {
     "amount": 1000.50,
-    "currency": "NGN",
+    "currency": "USD",
     "idempotencyKey": "unique-fund-key-{{$guid}}"
 }
 

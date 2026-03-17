@@ -45,16 +45,26 @@ describe('WalletFlow (e2e)', () => {
     );
   });
 
-  it('2. Should verify OTP and get access token', async () => {
+  it('2. Should verify OTP and then login to get access token', async () => {
     // Get OTP from Redis
     const otp = await redisService.get(`otp:${testUser.email}`);
     expect(otp).toBeDefined();
 
-    const res = await request(app.getHttpServer())
+    // Verify OTP
+    await request(app.getHttpServer())
       .post('/auth/verify')
       .send({
         email: testUser.email,
         otp,
+      })
+      .expect(200);
+
+    // Login
+    const res = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({
+        email: testUser.email,
+        password: testUser.password,
       })
       .expect(200);
 

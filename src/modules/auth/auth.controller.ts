@@ -36,8 +36,8 @@ export class AuthController {
 
   @Post('verify')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify OTP and get JWT token' })
-  @ApiResponse({ status: 200, description: 'JWT token' })
+  @ApiOperation({ summary: 'Verify OTP' })
+  @ApiResponse({ status: 200, description: 'Email verified successfully' })
   @ApiResponse({ status: 401, description: 'Invalid or expired OTP' })
   verify(@Body() verifyOtpDto: VerifyOtpDto) {
     return this.authService.verify(verifyOtpDto);

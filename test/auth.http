@@ -20,7 +20,7 @@ Content-Type: application/json
     "email": "md2@maildrop.cc",
     "otp": "196920" 
 }
-# Note: Get the real OTP from the server console/logs
+# Note: Get the real OTP from the server console/logs. This only verifies the account.
 
 ###
 

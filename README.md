@@ -30,6 +30,9 @@ A robust NestJS backend for a multi-currency FX trading platform where users can
 
 ## 🏗️ Architecture Decisions
 
+> [!NOTE]
+> For a detailed breakdown of the technical rationale and assumptions behind our design (FX Rates, Wallet Security, and Data Precision), see [**DECISIONS.md**](./DECISIONS.md).
+
 ### 1. Layered Architecture
 We follow the standard NestJS modular architecture split into Controller -> Service -> Entity/Repository. This ensures:
 - **Scalability**: Modules are self-contained and can be extracted into microservices if needed.
@@ -42,8 +45,12 @@ We follow the standard NestJS modular architecture split into Controller -> Serv
 - **Idempotency**: All funding requests (`/wallet/fund`) require a unique reference/idempotency key. This prevents double-funding if a user or network retries a request.
 - **Precision**: Monetary values are stored as `DECIMAL(18, 4)` to avoid floating-point rounding errors common in standard number types.
 
-### 3. Caching (Redis)
-- FX rates are fetched from External APIs and cached in Redis with a 5-minute TTL to stay within API rate limits and reduce latency.
+### 3. FX Rates & High Availability
+- **Multi-layer Fallback**: To ensure reliability, FX rates follow a **Cache -> API -> DB** strategy.
+    - **Redis (Fresh)**: Rates are cached with a **15-minute TTL** (900s) to balance performance and API quota usage.
+    - **External API**: If cache is empty, we fetch from **ExchangeRate-API**.
+    - **PostgreSQL (Stale Fallback)**: If the API is down, we fall back to the last successfully persisted rates in the database (marked with `stale: true`).
+- **Data Integrity**: While stale data is allowed for reading rates, **mutations** (conversion/trading) strictly require fresh data from the cache/API to prevent financial discrepancies.
 
 ### 4. Email Delivery (Strategy Pattern)
 - **Abstraction**: Email delivery is abstracted behind a `MailProvider` interface. This allows seamless switching between providers (SMTP, Resend, SES) without modifying business logic.

@@ -9,6 +9,7 @@ import { RedisModule } from './common/redis/redis.module.js';
 import { MailModule } from './common/mail/mail.module.js';
 import { WalletModule } from './modules/wallet/wallet.module.js';
 import { TransactionsModule } from './modules/transactions/transactions.module.js';
+import { FxModule } from './modules/fx/fx.module.js';
 import { envValidationSchema } from './common/config/env.validation.js';
 import databaseConfig from './common/config/database.config.js';
 import authConfig from './common/config/auth.config.js';
@@ -55,6 +56,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard.js';
     UsersModule,
     WalletModule,
     TransactionsModule,
+    FxModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000,

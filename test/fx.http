@@ -1,0 +1,37 @@
+### FX Rates Module API
+
+@baseUrl = http://localhost:3000
+@authToken = {{login.response.body.accessToken}}
+
+### 2. Login to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+   "email": "md2@maildrop.cc",
+    "password": "Password123!"
+}
+
+### 2. Get FX Rates (Default USD)
+GET {{baseUrl}}/fx/rates?base=USD
+Authorization: Bearer {{authToken}}
+
+### 3. Get FX Rates (NGN)
+GET {{baseUrl}}/fx/rates?base=NGN
+Authorization: Bearer {{authToken}}
+
+### 4. Get FX Rates (EUR)
+GET {{baseUrl}}/fx/rates?base=EUR
+Authorization: Bearer {{authToken}}
+
+### 5. Get FX Rates (Invalid Currency)
+GET {{baseUrl}}/fx/rates?base=INVALID
+Authorization: Bearer {{authToken}}
+
+### 6. Get FX Rates (No Auth)
+GET {{baseUrl}}/fx/rates?base=USD
+
+###
+GET {{baseUrl}}/fx/rates?base=USD
+Authorization: Bearer {{authToken}}

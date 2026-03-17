@@ -236,7 +236,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('should verify user and return JWT token', async () => {
+    it('should verify user and return success message', async () => {
       const user = {
         id: 'user-id',
         email: verifyDto.email,
@@ -245,7 +245,6 @@ describe('AuthService', () => {
       };
       usersService.findByEmail.mockResolvedValue(user as any);
       redisService.get.mockResolvedValue(verifyDto.otp);
-      jwtService.sign.mockReturnValue('jwt_token');
 
       const result = await service.verify(verifyDto);
 
@@ -257,7 +256,7 @@ describe('AuthService', () => {
         queryRunner.manager,
       );
       expect(redisService.del).toHaveBeenCalledWith(`otp:${verifyDto.email}`);
-      expect(result.accessToken).toBe('jwt_token');
+      expect(result.message).toContain('Email verified successfully');
     });
   });
 
