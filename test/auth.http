@@ -31,3 +31,15 @@ Content-Type: application/json
 {
     "email": "md@maildrop.cc"
 }
+
+###
+
+# @name login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "md2@maildrop.cc",
+    "password": "Password123!"
+}
+

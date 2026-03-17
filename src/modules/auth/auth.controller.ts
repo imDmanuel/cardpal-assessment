@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
+import { LoginDto } from './dto/login.dto';
 
 @ApiTags('Auth')
 @Public()
@@ -19,6 +20,18 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Bad Request' })
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Standard email/password login' })
+  @ApiResponse({ status: 200, description: 'User authenticated, JWT returned' })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid credentials or not verified',
+  })
+  login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
   }
 
   @Post('verify')

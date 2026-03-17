@@ -35,17 +35,33 @@ We follow the standard NestJS modular architecture split into Controller -> Serv
 - **Scalability**: Modules are self-contained and can be extracted into microservices if needed.
 - **Testability**: Service logic can be tested independently of HTTP concerns.
 
-### 2. Database Design & Atomicity
+### 2. Database Design & Reliability
 - **PostgreSQL**: Chosen for its ACID compliance and robust transaction support, which is critical for financial applications.
-- **Transactions**: All balance mutations (fund, convert, trade) are wrapped in DB transactions using TypeORM `QueryRunner` to prevent race conditions and double-spending.
-- **Precision**: Monetary values are stored as `DECIMAL(18, 4)` to avoid floating-point rounding errors.
+- **Atomic Transactions**: All balance mutations are wrapped in DB transactions using TypeORM `QueryRunner` to ensure atomicity. If any part of a multi-step update (e.g., wallet credit + transaction log) fails, the entire process is rolled back.
+- **Pessimistic Locking**: To prevent **race conditions** in high-frequency trading, we use `SELECT FOR UPDATE` when fetching balances for mutation. This ensures that concurrent requests for the same user wallet are serialized at the database level.
+- **Idempotency**: All funding requests (`/wallet/fund`) require a unique reference/idempotency key. This prevents double-funding if a user or network retries a request.
+- **Precision**: Monetary values are stored as `DECIMAL(18, 4)` to avoid floating-point rounding errors common in standard number types.
 
 ### 3. Caching (Redis)
 - FX rates are fetched from External APIs and cached in Redis with a 5-minute TTL to stay within API rate limits and reduce latency.
 
 ### 4. Email Delivery (Strategy Pattern)
-- **Abstraction**: Email delivery is abstracted behind a `MailProvider` interface. This allows seamless switching between providers (e.g., SMTP, Resend API, AWS SES) via Dependency Injection without modifying core business logic.
-- **Synchronous Execution (V1)**: To prioritize simplicity and avoid infrastructure entropy in the MVP phase, OTP emails are sent synchronously. If the email fails to send (e.g., network timeout), the API returns an immediate error, allowing the user to simply click "Resend". Complex background job queues (like BullMQ) and exponential backoff are deferred until scale demands them.
+- **Abstraction**: Email delivery is abstracted behind a `MailProvider` interface. This allows seamless switching between providers (SMTP, Resend, SES) without modifying business logic.
+- **Tradeoff - Sync vs Async Email**: To maintain a low-complexity infrastructure for the MVP, OTP emails are sent **synchronously**.
+    - **Pros**: Immediate client-side feedback if the provider is down; no need for message brokers (Redis/BullMQ) or separate worker processes.
+    - **Cons**: Higher request latency during registration.
+    - **Decision**: Deferred background workers until infrastructure scale justifies the overhead of managing a persistent queue.
+
+### 5. Identity & Access Control (RBAC)
+- **Global Protection**: All routes are protected by `JwtAuthGuard` by default.
+- **Public Access**: Specific endpoints (e.g., registration, health check) are explicitly white-listed using a custom `@Public()` decorator.
+- **Role System**: Simple `USER` / `ADMIN` hierarchy.
+    - **Promotion**: A hardcoded `SUPERADMIN_EMAIL` (config via `.env`) is automatically treated as an `ADMIN` upon login. This superadmin is the only one who can promote other users to `ADMIN` status via the `/users/:id/promote` endpoint.
+- **JWT Strategy**: Stateless authentication using signed JWTs.
+
+### 6. Consistent API Responses
+- **Response Wrapper**: All successful responses are intercepted and wrapped in a standard JSON envelope: `{ "success": true, "statusCode": 200, "message": "...", "data": [...] }`.
+- **Error Filtering**: A global `HttpExceptionFilter` ensures that even errors follow a predictable structure, aiding frontend integration.
 
 ---
 

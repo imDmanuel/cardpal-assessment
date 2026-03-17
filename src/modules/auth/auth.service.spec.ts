@@ -8,6 +8,9 @@ import { ConfigService } from '@nestjs/config';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { UserRole } from '../users/enums/user-role.enum';
 import * as bcrypt from 'bcrypt';
+import { DataSource } from 'typeorm';
+import { WalletService } from '../wallet/wallet.service';
+import appConfig from '../../common/config/app.config';
 
 jest.mock('bcrypt');
 
@@ -17,9 +20,22 @@ describe('AuthService', () => {
   let jwtService: jest.Mocked<JwtService>;
   let redisService: jest.Mocked<RedisService>;
   let mailService: jest.Mocked<MailService>;
-  let configService: jest.Mocked<ConfigService>;
+  let walletService: jest.Mocked<WalletService>;
+  let dataSource: jest.Mocked<DataSource>;
+  let appCfg: { nodeEnv: string; superAdminEmail: string };
+
+  const registerDto = {
+    email: 'test@example.com',
+    password: 'password123',
+    name: 'Test User',
+  };
 
   beforeEach(async () => {
+    appCfg = {
+      nodeEnv: 'test',
+      superAdminEmail: registerDto.email,
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -57,6 +73,31 @@ describe('AuthService', () => {
             get: jest.fn(),
           },
         },
+        {
+          provide: appConfig.KEY,
+          useValue: appCfg,
+        },
+        {
+          provide: WalletService,
+          useValue: {
+            createDefaultWallets: jest.fn(),
+          },
+        },
+        {
+          provide: DataSource,
+          useValue: {
+            createQueryRunner: jest.fn().mockReturnValue({
+              connect: jest.fn(),
+              startTransaction: jest.fn(),
+              commitTransaction: jest.fn(),
+              rollbackTransaction: jest.fn(),
+              release: jest.fn(),
+              manager: {
+                save: jest.fn(),
+              },
+            }),
+          },
+        },
       ],
     }).compile();
 
@@ -65,7 +106,8 @@ describe('AuthService', () => {
     jwtService = module.get(JwtService);
     redisService = module.get(RedisService);
     mailService = module.get(MailService);
-    configService = module.get(ConfigService);
+    walletService = module.get(WalletService);
+    dataSource = module.get(DataSource);
   });
 
   it('should be defined', () => {
@@ -73,12 +115,6 @@ describe('AuthService', () => {
   });
 
   describe('register', () => {
-    const registerDto = {
-      email: 'test@example.com',
-      password: 'password123',
-      name: 'Test User',
-    };
-
     it('should throw BadRequestException if email already exists', async () => {
       usersService.findByEmail.mockResolvedValue({ id: '1' } as any);
       await expect(service.register(registerDto)).rejects.toThrow(
@@ -89,8 +125,10 @@ describe('AuthService', () => {
     it('should create a user and send OTP email', async () => {
       usersService.findByEmail.mockResolvedValue(null);
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed_password');
-      usersService.create.mockResolvedValue({ email: registerDto.email } as any);
-      configService.get.mockReturnValue(null); // No superadmin
+      usersService.create.mockResolvedValue({
+        email: registerDto.email,
+      } as any);
+      appCfg.superAdminEmail = ''; // No superadmin
 
       const result = await service.register(registerDto);
 
@@ -109,8 +147,10 @@ describe('AuthService', () => {
 
     it('should assign ADMIN role if email matches SUPERADMIN_EMAIL', async () => {
       usersService.findByEmail.mockResolvedValue(null);
-      configService.get.mockReturnValue(registerDto.email);
-      usersService.create.mockResolvedValue({ email: registerDto.email } as any);
+      appCfg.superAdminEmail = registerDto.email;
+      usersService.create.mockResolvedValue({
+        email: registerDto.email,
+      } as any);
 
       await service.register(registerDto);
 
@@ -119,6 +159,57 @@ describe('AuthService', () => {
           role: UserRole.ADMIN,
         }),
       );
+    });
+  });
+
+  describe('login', () => {
+    const loginDto = {
+      email: 'test@example.com',
+      password: 'password123',
+    };
+
+    it('should throw UnauthorizedException if user not found', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should throw UnauthorizedException if user is not verified', async () => {
+      usersService.findByEmail.mockResolvedValue({
+        isVerified: false,
+      } as any);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should throw UnauthorizedException if password mismatch', async () => {
+      usersService.findByEmail.mockResolvedValue({
+        isVerified: true,
+        passwordHash: 'hashed_password',
+      } as any);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should return JWT token on successful login', async () => {
+      const user = {
+        id: 'user-id',
+        email: loginDto.email,
+        role: UserRole.USER,
+        isVerified: true,
+        passwordHash: 'hashed_password',
+      };
+      usersService.findByEmail.mockResolvedValue(user as any);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      jwtService.sign.mockReturnValue('jwt_token');
+
+      const result = await service.login(loginDto);
+
+      expect(result.accessToken).toBe('jwt_token');
     });
   });
 
@@ -136,7 +227,9 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException if OTP is invalid', async () => {
-      usersService.findByEmail.mockResolvedValue({ email: verifyDto.email } as any);
+      usersService.findByEmail.mockResolvedValue({
+        email: verifyDto.email,
+      } as any);
       redisService.get.mockResolvedValue('654321');
       await expect(service.verify(verifyDto)).rejects.toThrow(
         UnauthorizedException,
@@ -157,7 +250,12 @@ describe('AuthService', () => {
       const result = await service.verify(verifyDto);
 
       expect(user.isVerified).toBe(true);
-      expect(usersService.save).toHaveBeenCalled();
+      const queryRunner = dataSource.createQueryRunner();
+      expect(queryRunner.manager.save).toHaveBeenCalledWith(user);
+      expect(walletService.createDefaultWallets).toHaveBeenCalledWith(
+        user.id,
+        queryRunner.manager,
+      );
       expect(redisService.del).toHaveBeenCalledWith(`otp:${verifyDto.email}`);
       expect(result.accessToken).toBe('jwt_token');
     });

@@ -1,0 +1,87 @@
+### Wallet & Transaction System Verification
+
+@baseUrl = http://localhost:3000/api
+@email = tester@maildrop.cc
+@password = Password123!
+
+# 1. Register a new user
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "{{email}}",
+    "password": "{{password}}",
+    "name": "Test User"
+}
+
+###
+
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "{{email}}",
+    "password": "{{password}}"
+}
+
+###
+
+@authToken = {{login.response.body.data.accessToken}}
+
+# 2. Verify account (Triggers Wallet Creation)
+# Get the OTP from the terminal logs
+# @name verify
+POST {{baseUrl}}/auth/verify
+Content-Type: application/json
+
+{
+    "email": "{{email}}",
+    "otp": "443168"
+}
+
+###
+
+# @name verifyLogin
+@verifyToken = {{verify.response.body.data.accessToken}}
+
+# 3. Get Initial Balances
+# @name getBalances
+GET {{baseUrl}}/wallet
+Authorization: Bearer {{authToken}}
+
+###
+
+# 4. Fund NGN Wallet (Success)
+# @name fundWallet
+POST {{baseUrl}}/wallet/fund
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "amount": 1000.50,
+    "currency": "NGN",
+    "idempotencyKey": "unique-fund-key-{{$guid}}"
+}
+
+###
+
+# 5. Fund NGN Wallet (Idempotency - Conflict 409)
+# Try same request again
+POST {{baseUrl}}/wallet/fund
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "amount": 1000.50,
+    "currency": "NGN",
+    "idempotencyKey": "unique-fund-key-001"
+}
+
+###
+
+# 6. Verify Final Balances
+GET {{baseUrl}}/wallet
+Authorization: Bearer {{authToken}}
+

@@ -83,7 +83,10 @@ describe('UsersService', () => {
     it('should promote a user to ADMIN', async () => {
       const user = { id: '1', role: UserRole.USER };
       repository.findOne.mockResolvedValue(user as any);
-      repository.save.mockResolvedValue({ ...user, role: UserRole.ADMIN } as any);
+      repository.save.mockResolvedValue({
+        ...user,
+        role: UserRole.ADMIN,
+      } as any);
 
       const result = await service.promoteUser('1');
 
