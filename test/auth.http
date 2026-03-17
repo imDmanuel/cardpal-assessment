@@ -1,0 +1,33 @@
+### Auth Requests
+
+# @name register
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+    "email": "md2@maildrop.cc",
+    "password": "Password123!",
+    "name": "MD Test User"
+}
+
+###
+
+# @name verify
+POST http://localhost:3000/api/auth/verify
+Content-Type: application/json
+
+{
+    "email": "md2@maildrop.cc",
+    "otp": "196920" 
+}
+# Note: Get the real OTP from the server console/logs
+
+###
+
+# @name resendOtp
+POST http://localhost:3000/api/auth/resend-otp
+Content-Type: application/json
+
+{
+    "email": "md@maildrop.cc"
+}
