@@ -66,7 +66,11 @@ We follow the standard NestJS modular architecture split into Controller -> Serv
     - **Promotion**: A hardcoded `SUPERADMIN_EMAIL` (config via `.env`) is automatically treated as an `ADMIN` upon login. This superadmin is the only one who can promote other users to `ADMIN` status via the `/users/:id/promote` endpoint.
 - **JWT Strategy**: Stateless authentication using signed JWTs.
 
-### 6. Consistent API Responses
+### 6. Transaction History
+- **Auditability**: Every wallet mutation creates a permanent record in the `transactions` table, storing the exact rate used and amounts in both currencies.
+- **Filtering**: Users can filter their history by `type` (FUND, CONVERT, TRADE) and navigate using limit/offset pagination.
+
+### 7. Consistent API Responses
 - **Response Wrapper**: All successful responses are intercepted and wrapped in a standard JSON envelope: `{ "success": true, "statusCode": 200, "message": "...", "data": [...] }`.
 - **Error Filtering**: A global `HttpExceptionFilter` ensures that even errors follow a predictable structure, aiding frontend integration.
 
@@ -76,6 +80,8 @@ We follow the standard NestJS modular architecture split into Controller -> Serv
 1. **Base Funding**: Users can only fund their wallets in **Naira (NGN)**. All other currencies must be acquired via conversion or trading.
 2. **Exchange Rates**: ExchangeRate-API is used as the primary source of truth for real-time rates.
 3. **Multi-currency**: A user's wallet supports NGN, USD, EUR, and GBP by default.
+4. **Trade Logic**: Trading is implemented as a single-step atomic operation (no quote/reconfirmation delay). This is an MVP simplification to avoid the complexity of temporary quote management.
+5. **No Spread**: For this assessment, we use mid-market rates without an additional currency spread or transaction fee.
 
 ---
 

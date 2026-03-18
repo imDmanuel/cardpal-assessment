@@ -109,8 +109,8 @@ describe('FxService', () => {
       expect(provider.getLatestRates).toHaveBeenCalledWith(Currency.USD);
       expect(result.stale).toBe(false);
       expect(result.rates).toEqual(mockRates);
-      
-      await new Promise(resolve => setTimeout(resolve, 10));
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(redis.set).toHaveBeenCalled();
       expect(repository.createQueryBuilder).toHaveBeenCalled();
     });
@@ -118,11 +118,19 @@ describe('FxService', () => {
     it('should fall back to DB (stale) if Provider fails', async () => {
       redis.get.mockResolvedValue(null);
       provider.getLatestRates.mockRejectedValue(new Error('API Down'));
-      
+
       const staleDate = new Date(Date.now() - 1000000);
       repository.find.mockResolvedValue([
-        { quote: Currency.NGN, rate: { toNumber: () => 1600 } as any, fetchedAt: staleDate },
-        { quote: Currency.EUR, rate: { toNumber: () => 0.95 } as any, fetchedAt: staleDate },
+        {
+          quote: Currency.NGN,
+          rate: { toNumber: () => 1600 } as any,
+          fetchedAt: staleDate,
+        },
+        {
+          quote: Currency.EUR,
+          rate: { toNumber: () => 0.95 } as any,
+          fetchedAt: staleDate,
+        },
       ] as any);
 
       const result = await service.getRates(Currency.USD);
@@ -170,13 +178,15 @@ describe('FxService', () => {
     it('should throw 503 and NOT fall back to DB if Provider fails', async () => {
       redis.get.mockResolvedValue(null);
       provider.getLatestRates.mockRejectedValue(new Error('API Down'));
-      
-      // Even if DB has data
-      repository.find.mockResolvedValue([{ quote: Currency.NGN, rate: 1600 } as any]);
 
-      await expect(service.getRateForMutation(Currency.USD, Currency.NGN)).rejects.toThrow(
-        ServiceUnavailableException,
-      );
+      // Even if DB has data
+      repository.find.mockResolvedValue([
+        { quote: Currency.NGN, rate: 1600 } as any,
+      ]);
+
+      await expect(
+        service.getRateForMutation(Currency.USD, Currency.NGN),
+      ).rejects.toThrow(ServiceUnavailableException);
       expect(repository.find).not.toHaveBeenCalled();
     });
 
@@ -184,9 +194,9 @@ describe('FxService', () => {
       redis.get.mockResolvedValue(null);
       provider.getLatestRates.mockResolvedValue({ USD: 1 }); // NGN missing
 
-      await expect(service.getRateForMutation(Currency.USD, Currency.NGN)).rejects.toThrow(
-        ServiceUnavailableException,
-      );
+      await expect(
+        service.getRateForMutation(Currency.USD, Currency.NGN),
+      ).rejects.toThrow(ServiceUnavailableException);
     });
   });
 });

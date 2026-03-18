@@ -1,0 +1,120 @@
+### Exchange System Verification (Conversion, Trading & History)
+
+@baseUrl = http://localhost:3000/api
+@email = tester@maildrop.cc
+@password = Password123!
+
+# 1. Register a new user
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "{{email}}",
+    "password": "{{password}}",
+    "name": "Exchange Tester"
+}
+
+###
+
+# 2. Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "{{email}}",
+    "password": "{{password}}"
+}
+
+###
+
+@authToken = {{login.response.body.data.accessToken}}
+
+# 3. Verify account (Initializes 4 Wallets)
+# NOTE: Check terminal logs for the OTP
+# @name verify
+POST {{baseUrl}}/auth/verify
+Content-Type: application/json
+
+{
+    "email": "{{email}}",
+    "otp": "654321" 
+}
+
+###
+
+# 4. Initial Balances (Should all be 0)
+GET {{baseUrl}}/wallet
+Authorization: Bearer {{authToken}}
+
+###
+
+# 5. Fund NGN Wallet (Base for trading)
+# @name fund
+POST {{baseUrl}}/wallet/fund
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "amount": 50000,
+    "currency": "NGN",
+    "idempotencyKey": "initial-fund-{{$guid}}"
+}
+
+###
+
+# 6. Feature 4: Currency Conversion (NGN -> USD)
+# @name convert
+POST {{baseUrl}}/wallet/convert
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "fromCurrency": "NGN",
+    "toCurrency": "USD",
+    "amount": 10000,
+    "idempotencyKey": "conv-1-{{$guid}}"
+}
+
+###
+
+# 7. Feature 5: Trading (USD -> NGN)
+# Must involve NGN
+# @name trade
+POST {{baseUrl}}/wallet/trade
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "fromCurrency": "USD",
+    "toCurrency": "NGN",
+    "amount": 5,
+    "idempotencyKey": "trade-1-{{$guid}}"
+}
+
+###
+
+# 8. Negative Case: Invalid Trade (Not involving NGN)
+POST {{baseUrl}}/wallet/trade
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "fromCurrency": "USD",
+    "toCurrency": "EUR",
+    "amount": 1,
+    "idempotencyKey": "invalid-trade-{{$guid}}"
+}
+
+###
+
+# 9. Feature 6: Transaction History (Paginated)
+GET {{baseUrl}}/transactions?page=1&limit=10
+Authorization: Bearer {{authToken}}
+
+###
+
+# 10. Filtered History (Only COMPLETED CONVERT)
+GET {{baseUrl}}/transactions?type=CONVERT
+Authorization: Bearer {{authToken}}

@@ -130,8 +130,6 @@ describe('FxModule (e2e)', () => {
   });
 
   it('GET /fx/rates - Should return 401 without JWT', async () => {
-    await request(app.getHttpServer())
-      .get('/fx/rates?base=USD')
-      .expect(401);
+    await request(app.getHttpServer()).get('/fx/rates?base=USD').expect(401);
   });
 });

@@ -25,6 +25,10 @@ This document outlines the architectural rationale and key assumptions made duri
 - **Rationale**: Fetching rates from an external API is already slow. Stalling the response to wait for DB/Redis write operations would double the latency.
 - **Side Effect**: Resolved race conditions in E2E tests by adding micro-delays to ensure background tasks complete before test cleanup.
 
+### 5. Deadlock Prevention in Exchanges
+**Decision**: Always sort currencies alphabetically before acquiring database locks in `WalletService.executeExchange`.
+- **Rationale**: Prevents cyclic wait conditions when two users attempt reciprocal exchanges (e.g., NGN->USD and USD->NGN) at the same time. By enforcing a global lock order, we guarantee that one transaction will always proceed while the other waits, avoiding deadlocks.
+
 ---
 
 ## 💳 Wallet & Trading Design
@@ -46,6 +50,11 @@ This document outlines the architectural rationale and key assumptions made duri
 **Decision**: All multi-step mutations (Debit Wallet A -> Credit Wallet B -> Create Transaction Record) are wrapped in TypeORM Database Transactions.
 - **Rationale**: Guarantees data consistency. If any step fails (e.g., network timeout during transaction logging), the balance changes are rolled back automatically.
 
+### 5. NGN-Centric Trading Constraint
+**Decision**: The `/wallet/trade` endpoint is restricted to pairs involving `NGN`.
+- **Rationale**: Aligns with the assumption that NGN is the primary local currency. Other conversions should use the `/wallet/convert` endpoint if permitted, but "trading" specifically implies NGN parity in this business model.
+- **Assumption**: As requested, trading is currently single-step without a quote/confirmation phase or spread application.
+
 ---
 
 ## 🔐 Authentication & Identity
@@ -59,6 +68,17 @@ This document outlines the architectural rationale and key assumptions made duri
 - **Rationale**: Simplifies scaling by removing the need for session storage on the server-side.
 
 ---
+
+## 🛠️ API & Validation Decisions
+
+### 1. Multi-Layer Validation
+**Decision**: Use both Class-Validator DTOs and manual Service-Layer guards for currency pair validation.
+- **Rationale**: While DTOs provide clean 400 Bad Request responses at the edge, they are only active for HTTP requests. Manual guards in `WalletService` act as a "second line of defense," ensuring that even internal service calls or future non-HTTP triggers cannot process invalid trades (e.g., same-currency exchange), maintaining domain integrity.
+
+### 2. Swagger Compatibility & Virtual Fields
+**Decision**: Keep purely validation-focused virtual fields (like `sameCurrencyCheck`) hidden from Swagger documentation.
+- **Rationale**: These fields are implementation details of the validation hack used to enforce cross-field constraints (like `fromCurrency !== toCurrency`). Including them in Swagger caused circular dependency errors during metadata generation and would confuse API consumers.
+- **Implementation**: Removed `@ApiProperty` from internal validation fields.
 
 ## 🛠️ Environmental Assumptions
 

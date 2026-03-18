@@ -34,4 +34,4 @@ GET {{baseUrl}}/fx/rates?base=USD
 
 ###
 GET {{baseUrl}}/fx/rates?base=USD
-Authorization: Bearer {{authToken}}
+Authorization: Bearer 
