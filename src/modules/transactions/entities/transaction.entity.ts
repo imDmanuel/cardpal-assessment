@@ -26,6 +26,7 @@ export class Transaction {
     type: 'enum',
     enum: TransactionType,
   })
+  @Index()
   type: TransactionType;
 
   @Column({
@@ -39,12 +40,14 @@ export class Transaction {
     type: 'enum',
     enum: Currency,
   })
+  @Index()
   fromCurrency: Currency;
 
   @Column({
     type: 'enum',
     enum: Currency,
   })
+  @Index()
   toCurrency: Currency;
 
   @Column({

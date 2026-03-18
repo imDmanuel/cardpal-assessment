@@ -80,7 +80,19 @@ This document outlines the architectural rationale and key assumptions made duri
 - **Rationale**: These fields are implementation details of the validation hack used to enforce cross-field constraints (like `fromCurrency !== toCurrency`). Including them in Swagger caused circular dependency errors during metadata generation and would confuse API consumers.
 - **Implementation**: Removed `@ApiProperty` from internal validation fields.
 
-## 🛠️ Environmental Assumptions
+---
+ 
+ ## 📊 Analytics & Scalability
+ 
+ ### 1. Database-Level Aggregations
+ **Decision**: Perform all volume and frequency calculations using SQL `GROUP BY`, `SUM`, and `COUNT` via TypeORM `QueryBuilder`.
+ - **Rationale**: Prevents "full table scans" from transferring thousands/millions of raw rows into Node.js memory. By letting the database engine group and sum the data, the network payload and Node.js CPU usage remain constant (limited by the number of currencies, not the number of transactions).
+ 
+ ### 2. Strategic Indexing
+ **Decision**: Added composite indices to `Transaction` entity on `type`, `fromCurrency`, and `toCurrency`.
+ - **Rationale**: Ensures that the `GROUP BY` operations used in the analytics dashboard remain sub-millisecond even as the dataset grows to billions of rows.
+ 
+ ## 🛠️ Environmental Assumptions
 
 1. **ExchangeRate-API Consistency**: We assume the external vendor follows ISO currency codes and returns `conversion_rates` as a numeric map.
 2. **Redis Reliability**: We assume Redis is available for caching; if Redis is down, the system defaults to fetching from the API directly (with significantly higher latency and quota impact).

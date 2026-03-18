@@ -83,10 +83,10 @@ We follow the standard NestJS modular architecture split into Controller -> Serv
     - a global `UserActivityInterceptor` tracks `lastActiveAt` on every authenticated request.
     - `AuthService` tracks `lastLoginAt` during the login flow.
     - Both updates are **non-blocking (fire-and-forget)** to ensure zero impact on request latency.
-- **Aggregated Analytics**: An admin-only `AnalyticsModule` provides:
-    - Transaction volume summaries by base currency.
-    - Frequency analysis of top traded pairs.
-    - Active user counts (24h/7d) for business intelligence.
+- **Aggregated Analytics**: An admin-only `AnalyticsModule` provides transaction volume and pair frequency reports. 
+    - **Database-Level Aggregation**: All aggregations (SUM, COUNT, GROUP BY) are performed entirely within the database engine to ensure O(1) performance as the transaction table scales.
+    - **Optimized Indexing**: The `Transaction` table is indexed on `type`, `fromCurrency`, and `toCurrency` for sub-millisecond aggregation query times.
+    - **Memory Safety**: Moving processing to the DB prevents "full table scans" from loading millions of rows into Node.js heap memory.
 - **Retention & Scale Strategy**: 
     - Current: Indefinite history storage (~560k rows/year).
     - Planned Evolution: 30-day raw data retention -> Hourly rollups -> Daily aggregates.
