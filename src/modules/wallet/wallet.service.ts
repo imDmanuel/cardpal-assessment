@@ -238,7 +238,7 @@ export class WalletService {
 
       // 4. Balance Check
       if (fromWallet.balance.lessThan(fromAmountDecimal)) {
-        throw new ConflictException('Insufficient balance');
+        throw new BadRequestException('Insufficient balance');
       }
 
       // 5. Fetch Rate (STRICT)

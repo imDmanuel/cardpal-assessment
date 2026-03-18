@@ -17,10 +17,15 @@ describe('WalletFlow (e2e)', () => {
     password: 'Password123!',
   };
 
+  jest.setTimeout(30000);
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider('MAIL_PROVIDER')
+      .useValue({ sendMail: jest.fn().mockResolvedValue({}) })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
@@ -164,8 +169,8 @@ describe('WalletFlow (e2e)', () => {
 
     // Create an array of requests
     const requests = Array.from({ length: concurrentRequests }).map((_, i) => {
-      // Different idempotency keys to pass the first check
-      // but they will hit the database at the same time
+      // Different idempotency keys to ensure they are treated as separate requests,
+      // testing that the balance accumulates correctly under concurrency (no race conditions).
       return request(app.getHttpServer())
         .post('/wallet/fund')
         .set('Authorization', `Bearer ${accessToken}`)

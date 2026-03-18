@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module.js';
-import { RedisService } from '../src/common/redis/redis.service.js';
-import { Currency } from '../src/modules/wallet/enums/currency.enum.js';
-import { TransactionType } from '../src/modules/transactions/enums/transaction-type.enum.js';
+import { AppModule } from './../src/app.module';
+import { RedisService } from '../src/common/redis/redis.service';
+import { Currency } from '../src/modules/wallet/enums/currency.enum';
+import { TransactionType } from '../src/modules/transactions/enums/transaction-type.enum';
 
 describe('ExchangeFlow (e2e)', () => {
   let app: INestApplication<App>;
@@ -18,10 +18,15 @@ describe('ExchangeFlow (e2e)', () => {
     password: 'Password123!',
   };
 
+  jest.setTimeout(30000);
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider('MAIL_PROVIDER')
+      .useValue({ sendMail: jest.fn().mockResolvedValue({}) })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
@@ -74,6 +79,32 @@ describe('ExchangeFlow (e2e)', () => {
       expect(Number(res.body.toAmount)).toBeGreaterThan(0);
     });
 
+    it('Should reject duplicate conversion with same idempotencyKey', async () => {
+      const key = `conv_dup_${uniqueId}`;
+
+      await request(app.getHttpServer())
+        .post('/wallet/convert')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          fromCurrency: Currency.NGN,
+          toCurrency: Currency.USD,
+          amount: 100,
+          idempotencyKey: key,
+        })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post('/wallet/convert')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          fromCurrency: Currency.NGN,
+          toCurrency: Currency.USD,
+          amount: 100,
+          idempotencyKey: key,
+        })
+        .expect(409);
+    });
+
     it('Should prevent conversion with insufficient balance', async () => {
       await request(app.getHttpServer())
         .post('/wallet/convert')
@@ -84,7 +115,7 @@ describe('ExchangeFlow (e2e)', () => {
           amount: 1000000, // Way more than funded
           idempotencyKey: `conv_fail_bal_${uniqueId}`,
         })
-        .expect(409); // ConflictException('Insufficient balance')
+        .expect(400); // Changed from 409 to 400
     });
 
     it('Should prevent conversion to the same currency', async () => {
@@ -140,6 +171,55 @@ describe('ExchangeFlow (e2e)', () => {
 
       expect(res.body.data.length).toBeGreaterThanOrEqual(3); // Fund + Convert + Trade
       expect(res.body.total).toBeGreaterThanOrEqual(3);
+    });
+
+    it("Should not return another user's transactions (Security Isolation)", async () => {
+      // 1. Create second user
+      const secondUserUniqueId = `${uniqueId}_2`;
+      const secondUser = {
+        email: `isolation_test_${secondUserUniqueId}@example.com`,
+        name: 'Isolation Test User',
+        password: 'Password123!',
+      };
+
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send(secondUser);
+      const secondOtp = await redisService.get(`otp:${secondUser.email}`);
+      await request(app.getHttpServer())
+        .post('/auth/verify')
+        .send({ email: secondUser.email, otp: secondOtp });
+
+      const secondLoginRes = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email: secondUser.email, password: secondUser.password });
+      const secondAccessToken = (secondLoginRes.body as { accessToken: string })
+        .accessToken;
+
+      // 2. Perform a transaction as second user
+      await request(app.getHttpServer())
+        .post('/wallet/fund')
+        .set('Authorization', `Bearer ${secondAccessToken}`)
+        .send({
+          amount: 100,
+          currency: Currency.NGN,
+          idempotencyKey: `isolation_fund_${secondUserUniqueId}`,
+        })
+        .expect(201);
+
+      // 3. Fetch transactions as first user
+      const firstUserRes = await request(app.getHttpServer())
+        .get('/transactions')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(200);
+
+      // 4. Assert second user's transaction is NOT in the response
+      const data = (firstUserRes.body as { data: { idempotencyKey: string }[] })
+        .data;
+      const hasSecondUserTx = data.some(
+        (tx) => tx.idempotencyKey === `isolation_fund_${secondUserUniqueId}`,
+      );
+      expect(hasSecondUserTx).toBe(false);
     });
 
     it('Should filter history by type', async () => {

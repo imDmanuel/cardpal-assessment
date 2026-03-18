@@ -1,0 +1,63 @@
+### RBAC & Administrative System Verification
+
+@baseUrl = http://localhost:3000/api
+@superAdminEmail = admin@cardpal.com
+@regularUserEmail = tester@maildrop.cc
+@password = Password123!
+
+# 1. Login as Super-Admin
+# NOTE: Ensure SUPERADMIN_EMAIL={{superAdminEmail}} is set in .env 
+# and you have registered/verified this user.
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "{{superAdminEmail}}",
+    "password": "{{password}}"
+}
+
+###
+
+@adminToken = {{adminLogin.response.body.data.accessToken}}
+
+# 2. Login as Regular User
+# @name userLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "{{regularUserEmail}}",
+    "password": "{{password}}"
+}
+
+###
+
+@userToken = {{userLogin.response.body.data.accessToken}}
+
+# 3. Try to promote a user as a REGULAR USER (Should FAIL 403)
+# Replace {id} with a real user ID if needed
+PATCH {{baseUrl}}/users/some-user-uuid/promote
+Authorization: Bearer {{userToken}}
+
+###
+
+# 4. Promote a user as an ADMIN (Should SUCCEED 200)
+# First, get the ID of the regular user
+# @name getProfile
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{userToken}}
+
+###
+
+@targetUserId = {{getProfile.response.body.data.id}}
+
+# Now Promote
+PATCH {{baseUrl}}/users/{{targetUserId}}/promote
+Authorization: Bearer {{adminToken}}
+
+###
+
+# 5. Verify the user now has ADMIN role
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{userToken}}

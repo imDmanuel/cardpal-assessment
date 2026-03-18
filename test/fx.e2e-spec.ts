@@ -14,7 +14,7 @@ import { IExchangeRateProvider } from '../src/modules/fx/interfaces/exchange-rat
 
 jest.mock('axios');
 
-jest.setTimeout(60000);
+jest.setTimeout(30000); // Updated to 30s as per common standard
 
 describe('FxModule (e2e)', () => {
   let app: INestApplication<App>;
@@ -39,6 +39,8 @@ describe('FxModule (e2e)', () => {
     })
       .overrideProvider(EXCHANGE_RATE_PROVIDER)
       .useValue(provider)
+      .overrideProvider('MAIL_PROVIDER')
+      .useValue({ sendMail: jest.fn().mockResolvedValue({}) })
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -110,7 +112,9 @@ describe('FxModule (e2e)', () => {
 
     expect(res.body.stale).toBe(true);
     expect(res.body.rates.NGN).toBe(1550);
-    expect(new Date(res.body.fetchedAt)).toEqual(staleDate);
+    expect(new Date(res.body.fetchedAt).toISOString()).toBe(
+      staleDate.toISOString(),
+    );
   });
 
   it('GET /fx/rates - Should return 503 if API fails and DB is empty', async () => {
@@ -131,5 +135,25 @@ describe('FxModule (e2e)', () => {
 
   it('GET /fx/rates - Should return 401 without JWT', async () => {
     await request(app.getHttpServer()).get('/fx/rates?base=USD').expect(401);
+  });
+
+  it('GET /fx/rates - Should return cached rates on second call without calling provider', async () => {
+    const mockRates = { NGN: 1600, EUR: 0.92, GBP: 0.78 };
+    provider.getLatestRates.mockResolvedValue(mockRates);
+
+    // First call (Cache Miss)
+    await request(app.getHttpServer())
+      .get('/fx/rates?base=USD')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    // Second call (Cache Hit)
+    await request(app.getHttpServer())
+      .get('/fx/rates?base=USD')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    // Provider should only have been called once
+    expect(provider.getLatestRates).toHaveBeenCalledTimes(1);
   });
 });
