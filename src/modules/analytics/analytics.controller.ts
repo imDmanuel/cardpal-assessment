@@ -8,7 +8,6 @@ import {
 import { AnalyticsService } from './analytics.service.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../users/enums/user-role.enum.js';
-import { Currency } from '../wallet/enums/currency.enum.js';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -16,6 +15,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { GetFxTrendsDto } from './dto/get-fx-trends.dto.js';
 
 @ApiTags('Analytics')
 @ApiBearerAuth()
@@ -28,22 +28,13 @@ export class AnalyticsController {
   @Get('fx-trends')
   @ApiOperation({ summary: 'Get historical FX rates (Admin Only)' })
   @ApiResponse({ status: 200, description: 'List of historical rates' })
-  async getFxTrends(
-    @Query('base') base: Currency,
-    @Query('quote') quote: Currency,
-    @Query('from') fromStr?: string,
-    @Query('to') toStr?: string,
-    @Query('limit') limitStr?: string,
-  ) {
-    if (!base || !quote) {
-      throw new BadRequestException('Base and quote currencies are required');
-    }
+  async getFxTrends(@Query() dto: GetFxTrendsDto) {
+    const { base, quote, from: fromStr, to: toStr, limit } = dto;
 
     const from = fromStr
       ? new Date(fromStr)
       : new Date(Date.now() - 24 * 60 * 60 * 1000);
     const to = toStr ? new Date(toStr) : new Date();
-    const limit = limitStr ? parseInt(limitStr, 10) : 100;
 
     if (isNaN(from.getTime()) || isNaN(to.getTime())) {
       throw new BadRequestException('Invalid date format for from/to');
