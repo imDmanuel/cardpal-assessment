@@ -45,6 +45,7 @@ describe('AuthService', () => {
             findByEmail: jest.fn(),
             create: jest.fn(),
             save: jest.fn(),
+            updateLastLogin: jest.fn().mockResolvedValue(undefined),
           },
         },
         {

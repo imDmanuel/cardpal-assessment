@@ -41,6 +41,12 @@ describe('FxService', () => {
             find: jest.fn(),
             create: jest.fn(),
             createQueryBuilder: jest.fn().mockReturnValue({
+              select: jest.fn().mockReturnThis(),
+              distinctOn: jest.fn().mockReturnThis(),
+              where: jest.fn().mockReturnThis(),
+              orderBy: jest.fn().mockReturnThis(),
+              addOrderBy: jest.fn().mockReturnThis(),
+              getMany: jest.fn().mockResolvedValue([]),
               insert: jest.fn().mockReturnThis(),
               into: jest.fn().mockReturnThis(),
               values: jest.fn().mockReturnThis(),
@@ -120,7 +126,7 @@ describe('FxService', () => {
       provider.getLatestRates.mockRejectedValue(new Error('API Down'));
 
       const staleDate = new Date(Date.now() - 1000000);
-      repository.find.mockResolvedValue([
+      const mockStaleRates = [
         {
           quote: Currency.NGN,
           rate: { toNumber: () => 1600 } as any,
@@ -131,19 +137,25 @@ describe('FxService', () => {
           rate: { toNumber: () => 0.95 } as any,
           fetchedAt: staleDate,
         },
-      ] as any);
+      ];
+
+      const qb = repository.createQueryBuilder();
+      (qb.getMany as jest.Mock).mockResolvedValue(mockStaleRates);
 
       const result = await service.getRates(Currency.USD);
 
       expect(result.stale).toBe(true);
       expect(result.rates[Currency.NGN]).toBe(1600);
       expect(result.fetchedAt).toEqual(staleDate);
+      expect(qb.distinctOn).toHaveBeenCalled();
     });
 
     it('should throw 503 if Provider fails and DB is empty', async () => {
       redis.get.mockResolvedValue(null);
       provider.getLatestRates.mockRejectedValue(new Error('API Down'));
-      repository.find.mockResolvedValue([]);
+
+      const qb = repository.createQueryBuilder();
+      (qb.getMany as jest.Mock).mockResolvedValue([]);
 
       await expect(service.getRates(Currency.USD)).rejects.toThrow(
         ServiceUnavailableException,
