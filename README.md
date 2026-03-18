@@ -2,6 +2,11 @@
 
 A robust NestJS backend for a multi-currency FX trading platform where users can trade currencies, including Naira (NGN) and other international currencies.
 
+- **Wallets Module**: Multi-currency wallet support (USD, NGN, EUR, GBP).
+- **Exchange Module**: Peer-to-peer and bank-rate currency conversions.
+- **Analytics & Tracking**: Admin-only dashboard, historical FX trends, and user activity monitoring.
+- **Automated Seeding**: Default admin user automatically created on startup for easier evaluation.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -9,26 +14,44 @@ A robust NestJS backend for a multi-currency FX trading platform where users can
 - PostgreSQL
 - Redis
 
-### Setup
-1. **Clone the repository**
-2. **Install dependencies**
+### Installation & Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd cardpal
+   ```
+
+2. **Configure Environment**:
+   Create a `.env` file in the root directory (use `.env.example` as a template).
+   ```env
+   # Admin Bootstrapping (Optional)
+   ADMIN_EMAIL=admin@cardpal.com
+   ADMIN_PASSWORD=Admin123!
+   SEED_ADMIN=true
+   ```
+
+3. **Install Dependencies**:
    ```bash
    npm install
    ```
-3. **Configure environment**
-   - Copy `.env.example` to `.env`
-   - Fill in your database and API credentials.
-4. **Run the application**
+
+4. **Run the Application**:
    ```bash
-   # Development
+   # Development mode (with auto-seeding)
    npm run start:dev
    ```
+
+   > [!TIP]
+   > On the first run, the system will automatically create a default admin user:
+   > - **Email**: `admin@cardpal.com`
+   > - **Password**: `Admin123!`
+   > - **Role**: `ADMIN`
+   >
+   > You can use these credentials to immediately access the `/analytics` dashboards.
 5. **API Documentation**
    - Once running, Swagger UI is available at `http://localhost:3000/api/docs`
 
-### 🔑 Administrative Access
-To bootstrap an admin account:
-1. Set `SUPERADMIN_EMAIL=your-email@example.com` in your `.env`.
 2. Register with that exact email.
 3. The user will be automatically assigned the `ADMIN` role.
 4. Use this account to promote other users via `PATCH /api/users/:id/promote`.
