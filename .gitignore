@@ -43,3 +43,6 @@ lerna-debug.log*
 # NestJS artifacts
 .nestjs
 nest-cli.json
+
+# Antigravity artifacts
+.agent/
