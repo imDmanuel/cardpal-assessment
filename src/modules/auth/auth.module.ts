@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller.js';
 import { UsersModule } from '../users/users.module.js';
 import { WalletModule } from '../wallet/wallet.module.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy.js';
 import authConfig from '../../common/config/auth.config.js';
 import appConfig from '../../common/config/app.config.js';
 
@@ -28,7 +29,7 @@ import appConfig from '../../common/config/app.config.js';
       }),
     }),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
   controllers: [AuthController],
   exports: [AuthService],
 })

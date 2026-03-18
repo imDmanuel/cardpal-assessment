@@ -5,12 +5,13 @@ import {
   Logger,
   Inject,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service.js';
 import { RedisService } from '../../common/redis/redis.service.js';
 import { MailService } from '../../common/mail/mail.service.js';
 import { type ConfigType } from '@nestjs/config';
+import authConfig from '../../common/config/auth.config.js';
 import appConfig from '../../common/config/app.config.js';
 import { UserRole } from '../users/enums/user-role.enum.js';
 import { DataSource } from 'typeorm';
@@ -32,6 +33,8 @@ export class AuthService {
     private readonly mailService: MailService,
     @Inject(appConfig.KEY)
     private readonly appCfg: ConfigType<typeof appConfig>,
+    @Inject(authConfig.KEY)
+    private readonly authCfg: ConfigType<typeof authConfig>,
     private readonly walletService: WalletService,
     private readonly dataSource: DataSource,
   ) {}
@@ -43,7 +46,7 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = this.generateOtp();
 
     const user = await this.usersService.create({
       email: dto.email,
@@ -87,10 +90,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    this.logger.debug(
-      `Signing login token for ${user.email} with payload: ${JSON.stringify(payload)}`,
-    );
+    const tokens = await this.getTokens(user.id, user.email, user.role);
+    await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
+
+    this.logger.debug(`Login successful for ${user.email}. Tokens issued.`);
 
     // Fire and forget: Update last login timestamp
     this.usersService
@@ -101,9 +104,69 @@ export class AuthService {
         ),
       );
 
+    return tokens;
+  }
+
+  async logout(userId: string) {
+    await this.updateRefreshTokenHash(userId, null);
+    return { message: 'Logged out successfully' };
+  }
+
+  async refreshTokens(userId: string, refreshToken: string) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Access Denied');
+    }
+    const user = await this.usersService.findById(userId);
+    if (!user || !user.refreshTokenHash) {
+      throw new UnauthorizedException('Access Denied');
+    }
+
+    const isRefreshTokenValid = await bcrypt.compare(
+      refreshToken,
+      user.refreshTokenHash,
+    );
+
+    if (!isRefreshTokenValid) {
+      throw new UnauthorizedException('Access Denied');
+    }
+
+    const tokens = await this.getTokens(user.id, user.email, user.role);
+    await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
+
+    return tokens;
+  }
+
+  private async getTokens(userId: string, email: string, role: string) {
+    const payload = { sub: userId, email, role };
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: this.authCfg.jwtSecret,
+        expiresIn: this.authCfg
+          .jwtExpiresIn as unknown as JwtSignOptions['expiresIn'],
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: this.authCfg.jwtRefreshSecret,
+        expiresIn: this.authCfg
+          .jwtRefreshExpiresIn as unknown as JwtSignOptions['expiresIn'],
+      }),
+    ]);
+
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken,
+      refreshToken,
     };
+  }
+
+  private generateOtp(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  private async updateRefreshTokenHash(
+    userId: string,
+    refreshToken: string | null,
+  ) {
+    const hash = refreshToken ? await bcrypt.hash(refreshToken, 10) : null;
+    await this.usersService.updateRefreshTokenHash(userId, hash);
   }
 
   async verify(dto: VerifyOtpDto) {
@@ -133,6 +196,9 @@ export class AuthService {
       );
 
       await queryRunner.commitTransaction();
+
+      // Delete OTP from Redis after successful commit
+      await this.redisService.del(`otp:${dto.email}`);
     } catch (err: unknown) {
       await queryRunner.rollbackTransaction();
       const message = err instanceof Error ? err.message : String(err);
@@ -142,8 +208,7 @@ export class AuthService {
       await queryRunner.release();
     }
 
-    // Delete OTP from Redis after successful verification
-    await this.redisService.del(`otp:${dto.email}`);
+    // OTP was deleted inside the transaction try block on success
 
     return {
       message: 'Email verified successfully. You can now login.',
@@ -161,7 +226,7 @@ export class AuthService {
       throw new BadRequestException('User already verified');
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = this.generateOtp();
 
     // Update/Reset OTP in Redis
     await this.redisService.set(`otp:${user.email}`, otp, this.OTP_TTL);

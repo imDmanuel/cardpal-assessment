@@ -46,4 +46,11 @@ export class UsersService {
   async updateLastLogin(id: string): Promise<void> {
     await this.usersRepo.update(id, { lastLoginAt: new Date() });
   }
+
+  async updateRefreshTokenHash(
+    id: string,
+    refreshTokenHash: string | null,
+  ): Promise<void> {
+    await this.usersRepo.update(id, { refreshTokenHash });
+  }
 }

@@ -36,6 +36,9 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   lastActiveAt: Date;
 
+  @Column({ type: 'text', nullable: true })
+  refreshTokenHash: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 }

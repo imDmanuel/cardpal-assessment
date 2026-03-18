@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { DataSource } from 'typeorm';
 import { WalletService } from '../wallet/wallet.service';
 import appConfig from '../../common/config/app.config';
+import authConfig from '../../common/config/auth.config';
 
 jest.mock('bcrypt');
 
@@ -23,6 +24,7 @@ describe('AuthService', () => {
   let walletService: jest.Mocked<WalletService>;
   let dataSource: jest.Mocked<DataSource>;
   let appCfg: { nodeEnv: string; superAdminEmail: string };
+  let authCfg: any;
 
   const registerDto = {
     email: 'test@example.com',
@@ -35,6 +37,12 @@ describe('AuthService', () => {
       nodeEnv: 'test',
       superAdminEmail: registerDto.email,
     };
+    authCfg = {
+      jwtSecret: 'secret',
+      jwtExpiresIn: '1h',
+      jwtRefreshSecret: 'refresh-secret',
+      jwtRefreshExpiresIn: '7d',
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -43,15 +51,18 @@ describe('AuthService', () => {
           provide: UsersService,
           useValue: {
             findByEmail: jest.fn(),
+            findById: jest.fn(),
             create: jest.fn(),
             save: jest.fn(),
             updateLastLogin: jest.fn().mockResolvedValue(undefined),
+            updateRefreshTokenHash: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
           provide: JwtService,
           useValue: {
             sign: jest.fn(),
+            signAsync: jest.fn(),
           },
         },
         {
@@ -77,6 +88,10 @@ describe('AuthService', () => {
         {
           provide: appConfig.KEY,
           useValue: appCfg,
+        },
+        {
+          provide: authConfig.KEY,
+          useValue: authCfg,
         },
         {
           provide: WalletService,
@@ -180,7 +195,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('should return JWT token on successful login', async () => {
+    it('should return access and refresh tokens on successful login', async () => {
       const user = {
         id: 'user-id',
         email: loginDto.email,
@@ -190,11 +205,64 @@ describe('AuthService', () => {
       };
       usersService.findByEmail.mockResolvedValue(user as any);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      jwtService.sign.mockReturnValue('jwt_token');
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashed_refresh_token');
+      jwtService.signAsync.mockResolvedValueOnce('access_token');
+      jwtService.signAsync.mockResolvedValueOnce('refresh_token');
 
       const result = await service.login(loginDto);
 
-      expect(result.accessToken).toBe('jwt_token');
+      expect(result.accessToken).toBe('access_token');
+      expect(result.refreshToken).toBe('refresh_token');
+      expect(usersService.updateRefreshTokenHash).toHaveBeenCalledWith(
+        user.id,
+        'hashed_refresh_token',
+      );
+    });
+
+    it('should throw UnauthorizedException if refresh token is invalid', async () => {
+      const user = {
+        id: 'user-id',
+        refreshTokenHash: 'hashed_token',
+      };
+      usersService.findById.mockResolvedValue(user as any);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      await expect(
+        service.refreshTokens('user-id', 'invalid_token'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should return new tokens if refresh token is valid', async () => {
+      const user = {
+        id: 'user-id',
+        email: 'test@example.com',
+        role: UserRole.USER,
+        refreshTokenHash: 'hashed_token',
+      };
+      usersService.findById.mockResolvedValue(user as any);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('new_hashed_refresh_token');
+      jwtService.signAsync.mockResolvedValueOnce('new_access_token');
+      jwtService.signAsync.mockResolvedValueOnce('new_refresh_token');
+
+      const result = await service.refreshTokens('user-id', 'valid_token');
+
+      expect(result.accessToken).toBe('new_access_token');
+      expect(result.refreshToken).toBe('new_refresh_token');
+      expect(usersService.updateRefreshTokenHash).toHaveBeenCalledWith(
+        'user-id',
+        'new_hashed_refresh_token',
+      );
+    });
+  });
+
+  describe('logout', () => {
+    it('should clear refresh token hash', async () => {
+      await service.logout('user-id');
+      expect(usersService.updateRefreshTokenHash).toHaveBeenCalledWith(
+        'user-id',
+        null,
+      );
     });
   });
 

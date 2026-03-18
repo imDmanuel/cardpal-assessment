@@ -51,8 +51,12 @@ describe('Analytics (e2e)', () => {
     // 1. Setup Regular User
     await request(app.getHttpServer()).post('/auth/register').send(testUser);
     const userOtp = await redisService.get(`otp:${testUser.email}`);
-    await request(app.getHttpServer()).post('/auth/verify').send({ email: testUser.email, otp: userOtp });
-    const userLogin = await request(app.getHttpServer()).post('/auth/login').send({ email: testUser.email, password: testUser.password });
+    await request(app.getHttpServer())
+      .post('/auth/verify')
+      .send({ email: testUser.email, otp: userOtp });
+    const userLogin = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: testUser.email, password: testUser.password });
     userToken = userLogin.body.accessToken;
     const userProfile = await userService.findByEmail(testUser.email);
     userId = userProfile!.id;
@@ -60,12 +64,16 @@ describe('Analytics (e2e)', () => {
     // 2. Setup Admin User (Directly promoting for test speed)
     await request(app.getHttpServer()).post('/auth/register').send(adminUser);
     const adminOtp = await redisService.get(`otp:${adminUser.email}`);
-    await request(app.getHttpServer()).post('/auth/verify').send({ email: adminUser.email, otp: adminOtp });
+    await request(app.getHttpServer())
+      .post('/auth/verify')
+      .send({ email: adminUser.email, otp: adminOtp });
     const adminProfile = await userService.findByEmail(adminUser.email);
     adminId = adminProfile!.id;
     await userService.promoteUser(adminId); // Make admin
 
-    const adminLogin = await request(app.getHttpServer()).post('/auth/login').send({ email: adminUser.email, password: adminUser.password });
+    const adminLogin = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: adminUser.email, password: adminUser.password });
     adminToken = adminLogin.body.accessToken;
   });
 

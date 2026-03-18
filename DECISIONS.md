@@ -40,7 +40,8 @@ This document outlines the architectural rationale and key assumptions made duri
 
 ### 2. Auto-Wallet Provisions
 **Decision**: 4 currency wallets (NGN, USD, EUR, GBP) are automatically provisioned upon user verification.
-- **Rationale**: Ensures a consistent UX where every user immediately sees their base multi-currency account ready for action.
+- **Initial Balance**: New users receive an initial balance of **1,000 NGN** to facilitate immediate testing and evaluation of the trading features.
+- **Rationale**: Ensures a consistent UX where every user immediately sees their base multi-currency account ready for action and has "seed capital" to explore the platform.
 
 ### 3. Precision Management
 **Decision**: All monetary values use `DECIMAL(18, 4)` in the database and the `Decimal.js` library for in-memory arithmetic.

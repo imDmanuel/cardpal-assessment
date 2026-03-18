@@ -44,10 +44,11 @@ export class WalletService {
 
     const currencies = Object.values(Currency);
     const wallets = currencies.map((currency) => {
+      const isInitialNgn = currency === Currency.NGN;
       return repo.create({
         userId,
         currency,
-        balance: new Decimal(0),
+        balance: isInitialNgn ? new Decimal(1000) : new Decimal(0),
       });
     });
 
