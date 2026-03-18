@@ -46,3 +46,6 @@ nest-cli.json
 
 # Antigravity artifacts
 .agent/
+
+# Temporary files
+/tmp
