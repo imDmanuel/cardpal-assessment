@@ -26,6 +26,13 @@ A robust NestJS backend for a multi-currency FX trading platform where users can
 5. **API Documentation**
    - Once running, Swagger UI is available at `http://localhost:3000/api/docs`
 
+### 🔑 Administrative Access
+To bootstrap an admin account:
+1. Set `SUPERADMIN_EMAIL=your-email@example.com` in your `.env`.
+2. Register with that exact email.
+3. The user will be automatically assigned the `ADMIN` role.
+4. Use this account to promote other users via `PATCH /api/users/:id/promote`.
+
 ---
 
 ## 🏗️ Architecture Decisions
@@ -63,7 +70,7 @@ We follow the standard NestJS modular architecture split into Controller -> Serv
 - **Global Protection**: All routes are protected by `JwtAuthGuard` by default.
 - **Public Access**: Specific endpoints (e.g., registration, health check) are explicitly white-listed using a custom `@Public()` decorator.
 - **Role System**: Simple `USER` / `ADMIN` hierarchy.
-    - **Promotion**: A hardcoded `SUPERADMIN_EMAIL` (config via `.env`) is automatically treated as an `ADMIN` upon login. This superadmin is the only one who can promote other users to `ADMIN` status via the `/users/:id/promote` endpoint.
+    - **Promotion**: A configured `SUPERADMIN_EMAIL` is automatically granted `ADMIN` status upon registration. This admin can then promote other users.
 - **JWT Strategy**: Stateless authentication using signed JWTs.
 
 ### 6. Transaction History
