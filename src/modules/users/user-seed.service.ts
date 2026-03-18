@@ -1,5 +1,11 @@
-import { Injectable, OnApplicationBootstrap, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import {
+  Injectable,
+  OnApplicationBootstrap,
+  Logger,
+  Inject,
+} from '@nestjs/common';
+import { type ConfigType } from '@nestjs/config';
+import appConfig from '../../common/config/app.config.js';
 import { UsersService } from './users.service.js';
 import { WalletService } from '../wallet/wallet.service.js';
 import { User } from './entities/user.entity.js';
@@ -12,18 +18,20 @@ export class UserSeedService implements OnApplicationBootstrap {
   private readonly logger = new Logger(UserSeedService.name);
 
   constructor(
-    private readonly configService: ConfigService,
+    @Inject(appConfig.KEY)
+    private readonly appCfg: ConfigType<typeof appConfig>,
     private readonly usersService: UsersService,
     private readonly walletService: WalletService,
     private readonly dataSource: DataSource,
   ) {}
 
   async onApplicationBootstrap() {
-    const seedAdmin = this.configService.get<boolean>('app.seedAdmin');
+    const {
+      seedAdmin,
+      adminEmail: email,
+      adminPassword: password,
+    } = this.appCfg;
     if (!seedAdmin) return;
-
-    const email = this.configService.get<string>('app.adminEmail');
-    const password = this.configService.get<string>('app.adminPassword');
 
     if (!email || !password) {
       this.logger.warn(
