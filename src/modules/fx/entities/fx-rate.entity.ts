@@ -4,7 +4,6 @@ import {
   Column,
   UpdateDateColumn,
   CreateDateColumn,
-  Unique,
   Index,
 } from 'typeorm';
 import Decimal from 'decimal.js';
@@ -12,7 +11,7 @@ import { Currency } from '../../wallet/enums/currency.enum.js';
 import { DecimalTransformer } from '../../../common/transformers/decimal.transformer.js';
 
 @Entity('fx_rates')
-@Unique(['base', 'quote'])
+@Index(['base', 'quote', 'fetchedAt'])
 export class FxRate {
   @PrimaryGeneratedColumn('uuid')
   id: string;

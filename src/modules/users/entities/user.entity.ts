@@ -30,6 +30,12 @@ export class User {
   })
   role: UserRole;
 
+  @Column({ type: 'timestamp', nullable: true })
+  lastLoginAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  lastActiveAt: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 }

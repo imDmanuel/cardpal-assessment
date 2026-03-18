@@ -38,4 +38,12 @@ export class UsersService {
 
     return { message: 'User promoted to ADMIN successfully' };
   }
+
+  async updateLastActive(id: string): Promise<void> {
+    await this.usersRepo.update(id, { lastActiveAt: new Date() });
+  }
+
+  async updateLastLogin(id: string): Promise<void> {
+    await this.usersRepo.update(id, { lastLoginAt: new Date() });
+  }
 }

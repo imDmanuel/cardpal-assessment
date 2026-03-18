@@ -97,6 +97,16 @@ export class AuthService {
     this.logger.debug(
       `Signing login token for ${user.email} with payload: ${JSON.stringify(payload)}`,
     );
+
+    // Fire and forget: Update last login timestamp
+    this.usersService
+      .updateLastLogin(user.id)
+      .catch((err: Error) =>
+        this.logger.error(
+          `Failed to update last login for ${user.email}: ${err.message}`,
+        ),
+      );
+
     return {
       accessToken: this.jwtService.sign(payload),
     };

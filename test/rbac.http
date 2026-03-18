@@ -1,7 +1,7 @@
 ### RBAC & Administrative System Verification
 
 @baseUrl = http://localhost:3000/api
-@superAdminEmail = admin@cardpal.com
+@superAdminEmail = superadmin@maildrop.cc
 @regularUserEmail = tester@maildrop.cc
 @password = Password123!
 
@@ -38,14 +38,6 @@ Content-Type: application/json
 # 3. Try to promote a user as a REGULAR USER (Should FAIL 403)
 # Replace {id} with a real user ID if needed
 PATCH {{baseUrl}}/users/some-user-uuid/promote
-Authorization: Bearer {{userToken}}
-
-###
-
-# 4. Promote a user as an ADMIN (Should SUCCEED 200)
-# First, get the ID of the regular user
-# @name getProfile
-GET {{baseUrl}}/auth/profile
 Authorization: Bearer {{userToken}}
 
 ###

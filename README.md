@@ -77,7 +77,22 @@ We follow the standard NestJS modular architecture split into Controller -> Serv
 - **Auditability**: Every wallet mutation creates a permanent record in the `transactions` table, storing the exact rate used and amounts in both currencies.
 - **Filtering**: Users can filter their history by `type` (FUND, CONVERT, TRADE) and navigate using limit/offset pagination.
 
-### 7. Consistent API Responses
+### 7. Analytics & Activity Tracking (Scalability Ready)
+- **FX Trends**: With the switch from upsert to insert, `fx_rates` now stores historical data. The system uses **PostgreSQL 14+ `DISTINCT ON`** for efficient retrieval of the latest rates while maintaining full auditability of price changes.
+- **User Activity**: 
+    - a global `UserActivityInterceptor` tracks `lastActiveAt` on every authenticated request.
+    - `AuthService` tracks `lastLoginAt` during the login flow.
+    - Both updates are **non-blocking (fire-and-forget)** to ensure zero impact on request latency.
+- **Aggregated Analytics**: An admin-only `AnalyticsModule` provides:
+    - Transaction volume summaries by base currency.
+    - Frequency analysis of top traded pairs.
+    - Active user counts (24h/7d) for business intelligence.
+- **Retention & Scale Strategy**: 
+    - Current: Indefinite history storage (~560k rows/year).
+    - Planned Evolution: 30-day raw data retention -> Hourly rollups -> Daily aggregates.
+    - Storage: Future migration to **TimescaleDB** or a dedicated time-series bucket recommended for billion-row scale.
+
+### 8. Consistent API Responses
 - **Response Wrapper**: All successful responses are intercepted and wrapped in a standard JSON envelope: `{ "success": true, "statusCode": 200, "message": "...", "data": [...] }`.
 - **Error Filtering**: A global `HttpExceptionFilter` ensures that even errors follow a predictable structure, aiding frontend integration.
 

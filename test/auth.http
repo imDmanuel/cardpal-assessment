@@ -5,9 +5,9 @@ POST http://localhost:3000/api/auth/register
 Content-Type: application/json
 
 {
-    "email": "md2@maildrop.cc",
+    "email": "superadmin@maildrop.cc",
     "password": "Password123!",
-    "name": "MD Test User"
+    "name": "MD Super Admin"
 }
 
 ###
@@ -17,8 +17,8 @@ POST http://localhost:3000/api/auth/verify
 Content-Type: application/json
 
 {
-    "email": "md2@maildrop.cc",
-    "otp": "196920" 
+    "email": "superadmin@maildrop.cc",
+    "otp": "496418" 
 }
 # Note: Get the real OTP from the server console/logs. This only verifies the account.
 

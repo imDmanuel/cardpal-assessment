@@ -80,7 +80,14 @@ export class FxService {
       this.logger.warn(`API Fetch failed for ${base}, falling back to DB...`);
 
       // 3. Fallback to DB (Stale data)
-      const persistedRates = await this.fxRateRepo.find({ where: { base } });
+      // Efficiently fetch the latest rate for each unique quote currency for the base
+      const persistedRates = await this.fxRateRepo
+        .createQueryBuilder('rate')
+        .where('rate.base = :base', { base })
+        .distinctOn(['rate.quote'])
+        .orderBy('rate.quote')
+        .addOrderBy('rate.fetchedAt', 'DESC')
+        .getMany();
 
       if (persistedRates.length > 0) {
         const rates: Partial<Record<Currency, number>> = {};
@@ -185,7 +192,6 @@ export class FxService {
         .insert()
         .into(FxRate)
         .values(entities)
-        .orUpdate(['rate', 'fetchedAt'], ['base', 'quote'])
         .execute();
 
       this.logger.debug(`Persisted ${entities.length} rates for ${base} to DB`);

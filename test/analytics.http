@@ -1,0 +1,63 @@
+### AUTH: Register Admin
+# @name registerAdmin
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "superadmin@example.com",
+  "password": "Password123!",
+  "firstName": "Admin",
+  "lastName": "User"
+}
+
+### AUTH: Login Admin
+# @name loginAdmin
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "superadmin@example.com",
+  "password": "Password123!"
+}
+
+@adminToken = {{loginAdmin.response.body.data.accessToken}}
+
+### AUTH: Register User
+# @name registerUser
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "Password123!",
+  "firstName": "Regular",
+  "lastName": "User"
+}
+
+### AUTH: Login User
+# @name loginUser
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "Password123!"
+}
+
+@userToken = {{loginUser.response.body.data.accessToken}}
+
+### ANALYTICS: Get FX Trends (Admin)
+GET {{host}}/analytics/fx-trends?base=USD&quote=NGN
+Authorization: Bearer {{adminToken}}
+
+### ANALYTICS: Get Activity Summary (Admin)
+GET {{host}}/analytics/activity
+Authorization: Bearer {{adminToken}}
+
+### ANALYTICS: Get FX Trends (FORBIDDEN for regular user)
+GET {{host}}/analytics/fx-trends?base=USD&quote=NGN
+Authorization: Bearer {{userToken}}
+
+### ANALYTICS: Get Activity Summary (FORBIDDEN for regular user)
+GET {{host}}/analytics/activity
+Authorization: Bearer {{userToken}}

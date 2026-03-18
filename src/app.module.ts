@@ -10,6 +10,7 @@ import { MailModule } from './common/mail/mail.module.js';
 import { WalletModule } from './modules/wallet/wallet.module.js';
 import { TransactionsModule } from './modules/transactions/transactions.module.js';
 import { FxModule } from './modules/fx/fx.module.js';
+import { AnalyticsModule } from './modules/analytics/analytics.module.js';
 import { envValidationSchema } from './common/config/env.validation.js';
 import databaseConfig from './common/config/database.config.js';
 import authConfig from './common/config/auth.config.js';
@@ -19,6 +20,8 @@ import redisConfig from './common/config/redis.config.js';
 import smtpConfig from './common/config/smtp.config.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './modules/auth/guards/roles.guard.js';
+import { UserActivityInterceptor } from './common/interceptors/user-activity.interceptor.js';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -57,6 +60,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard.js';
     WalletModule,
     TransactionsModule,
     FxModule,
+    AnalyticsModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
@@ -76,6 +80,10 @@ import { RolesGuard } from './modules/auth/guards/roles.guard.js';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: UserActivityInterceptor,
     },
   ],
 })
