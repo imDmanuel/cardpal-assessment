@@ -123,7 +123,3 @@ graph TD
     H --> I[Log FUND Transaction]
 ```
 
----
-
-## 📝 Features & Progress
-See [fx-trading-app.md](./fx-trading-app.md) for the detailed implementation plan and feature-by-feature progress.
