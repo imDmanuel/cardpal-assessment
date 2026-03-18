@@ -45,18 +45,12 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const superAdminEmail = this.appCfg.superAdminEmail;
-    const role =
-      superAdminEmail && dto.email === superAdminEmail
-        ? UserRole.ADMIN
-        : UserRole.USER;
-
     const user = await this.usersService.create({
       email: dto.email,
       name: dto.name,
       passwordHash,
       isVerified: false,
-      role,
+      role: UserRole.USER,
     });
 
     // Store OTP in Redis using RedisService

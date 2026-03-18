@@ -145,22 +145,6 @@ describe('AuthService', () => {
       );
       expect(result.message).toContain('Registration successful');
     });
-
-    it('should assign ADMIN role if email matches SUPERADMIN_EMAIL', async () => {
-      usersService.findByEmail.mockResolvedValue(null);
-      appCfg.superAdminEmail = registerDto.email;
-      usersService.create.mockResolvedValue({
-        email: registerDto.email,
-      } as any);
-
-      await service.register(registerDto);
-
-      expect(usersService.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          role: UserRole.ADMIN,
-        }),
-      );
-    });
   });
 
   describe('login', () => {
