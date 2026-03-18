@@ -45,8 +45,20 @@ export class AnalyticsService {
    * Get a high-level summary of system activity.
    */
   async getActivitySummary() {
-    const [transactions, totalTransactions] =
-      await this.transactionRepo.findAndCount();
+    const now = new Date();
+    const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [[transactions, totalTransactions], active24h, active7d] =
+      await Promise.all([
+        this.transactionRepo.findAndCount(),
+        this.userRepo.count({
+          where: { lastActiveAt: MoreThanOrEqual(last24h) },
+        }),
+        this.userRepo.count({
+          where: { lastActiveAt: MoreThanOrEqual(last7d) },
+        }),
+      ]);
 
     const trades = transactions.filter(
       (t) =>
@@ -74,18 +86,6 @@ export class AnalyticsService {
       })
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
-
-    const now = new Date();
-    const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-    const active24h = await this.userRepo.count({
-      where: { lastActiveAt: MoreThanOrEqual(last24h) },
-    });
-
-    const active7d = await this.userRepo.count({
-      where: { lastActiveAt: MoreThanOrEqual(last7d) },
-    });
 
     return {
       totalTransactions,
