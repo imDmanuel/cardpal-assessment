@@ -67,6 +67,7 @@ export class FxService {
       this.updatePersistedRates(base, rates, fetchedAt).catch((err: Error) =>
         this.logger.error(
           `Failed to persist rates for ${base}: ${err.message}`,
+          err.stack,
         ),
       );
 
@@ -76,8 +77,13 @@ export class FxService {
         fetchedAt,
         stale: false,
       };
-    } catch (_error: unknown) {
-      this.logger.warn(`API Fetch failed for ${base}, falling back to DB...`);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `API Fetch failed for ${base}: ${errorMessage}. Falling back to DB...`,
+        error instanceof Error ? error.stack : undefined,
+      );
 
       // 3. Fallback to DB (Stale data)
       // Efficiently fetch the latest rate for each unique quote currency for the base
@@ -143,14 +149,18 @@ export class FxService {
       this.updatePersistedRates(base, rates, fetchedAt).catch((err: Error) =>
         this.logger.error(
           `Failed to persist rates for ${base}: ${err.message}`,
+          err.stack,
         ),
       );
 
       if (rates[quote]) return rates[quote];
       throw new Error(`Rate not found for ${base}/${quote}`);
-    } catch (_error: unknown) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Mutation rate blocked: Provider unavailable or rate missing for ${base}/${quote}`,
+        `Mutation rate blocked: Provider unavailable or rate missing for ${base}/${quote}. Error: ${errorMessage}`,
+        error instanceof Error ? error.stack : undefined,
       );
       throw new ServiceUnavailableException(
         `Real-time exchange rate for ${base}/${quote} is unavailable. Mutation aborted.`,
