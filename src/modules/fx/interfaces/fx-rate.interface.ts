@@ -1,4 +1,4 @@
-import { Currency } from '../../wallet/enums/currency.enum.js';
+import { Currency } from '../../wallet/enums/currency.enum';
 import Decimal from 'decimal.js';
 
 export interface IFxRate {
@@ -14,3 +14,4 @@ export interface IFxRatesResponse {
   fetchedAt: Date;
   stale: boolean;
 }
+

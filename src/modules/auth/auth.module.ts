@@ -2,14 +2,14 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigType } from '@nestjs/config';
-import { AuthService } from './auth.service.js';
-import { AuthController } from './auth.controller.js';
-import { UsersModule } from '../users/users.module.js';
-import { WalletModule } from '../wallet/wallet.module.js';
-import { JwtStrategy } from './strategies/jwt.strategy.js';
-import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy.js';
-import authConfig from '../../common/config/auth.config.js';
-import appConfig from '../../common/config/app.config.js';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { UsersModule } from '../users/users.module';
+import { WalletModule } from '../wallet/wallet.module';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import authConfig from '../../common/config/auth.config';
+import appConfig from '../../common/config/app.config';
 
 @Module({
   imports: [
@@ -34,3 +34,4 @@ import appConfig from '../../common/config/app.config.js';
   exports: [AuthService],
 })
 export class AuthModule {}
+

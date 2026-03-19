@@ -2,12 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { ServiceUnavailableException } from '@nestjs/common';
-import { FxService } from './fx.service.js';
-import { FxRate } from './entities/fx-rate.entity.js';
-import { RedisService } from '../../common/redis/redis.service.js';
-import { Currency } from '../wallet/enums/currency.enum.js';
-import fxConfig from '../../common/config/fx.config.js';
-import { EXCHANGE_RATE_PROVIDER } from './constants/fx.constants.js';
+import { FxService } from './fx.service';
+import { FxRate } from './entities/fx-rate.entity';
+import { RedisService } from '../../common/redis/redis.service';
+import { Currency } from '../wallet/enums/currency.enum';
+import fxConfig from '../../common/config/fx.config';
+import { EXCHANGE_RATE_PROVIDER } from './constants/fx.constants';
 
 describe('FxService', () => {
   let service: FxService;
@@ -212,3 +212,4 @@ describe('FxService', () => {
     });
   });
 });
+

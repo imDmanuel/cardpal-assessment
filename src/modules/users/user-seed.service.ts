@@ -5,11 +5,11 @@ import {
   Inject,
 } from '@nestjs/common';
 import { type ConfigType } from '@nestjs/config';
-import appConfig from '../../common/config/app.config.js';
-import { UsersService } from './users.service.js';
-import { WalletService } from '../wallet/wallet.service.js';
-import { User } from './entities/user.entity.js';
-import { UserRole } from './enums/user-role.enum.js';
+import appConfig from '../../common/config/app.config';
+import { UsersService } from './users.service';
+import { WalletService } from '../wallet/wallet.service';
+import { User } from './entities/user.entity';
+import { UserRole } from './enums/user-role.enum';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
@@ -82,3 +82,4 @@ export class UserSeedService implements OnApplicationBootstrap {
     }
   }
 }
+

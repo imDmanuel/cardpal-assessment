@@ -25,6 +25,12 @@ A robust NestJS backend for a multi-currency FX trading platform where users can
 2. **Configure Environment**:
    Create a `.env` file in the root directory (use `.env.example` as a template).
    ```env
+   # JWT Configuration
+   JWT_SECRET=your_jwt_secret_here
+   JWT_EXPIRES_IN=15m
+   JWT_REFRESH_SECRET=your_refresh_secret_here
+   JWT_REFRESH_EXPIRES_IN=7d
+
    # Admin Bootstrapping (Optional)
    ADMIN_EMAIL=admin@cardpal.com
    ADMIN_PASSWORD=Admin123!

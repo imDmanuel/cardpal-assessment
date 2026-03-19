@@ -1,8 +1,8 @@
 import { Module, Global } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import { MailService } from './mail.service.js';
-import { SmtpMailProvider } from './providers/smtp-mail.provider.js';
-import smtpConfig from '../config/smtp.config.js';
+import { MailService } from './mail.service';
+import { SmtpMailProvider } from './providers/smtp-mail.provider';
+import smtpConfig from '../config/smtp.config';
 
 @Global()
 @Module({
@@ -20,3 +20,4 @@ import smtpConfig from '../config/smtp.config.js';
   exports: [MailService],
 })
 export class MailModule {}
+

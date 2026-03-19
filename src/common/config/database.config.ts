@@ -8,3 +8,4 @@ export default registerAs('database', () => ({
   database: process.env.DB_NAME!,
   ssl: process.env.DB_SSL === 'true',
 }));
+

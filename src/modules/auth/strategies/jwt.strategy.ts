@@ -8,9 +8,9 @@ import {
 import { type ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import authConfig from '../../../common/config/auth.config.js';
-import { UsersService } from '../../users/users.service.js';
-import { UserRole } from '../../users/enums/user-role.enum.js';
+import authConfig from '../../../common/config/auth.config';
+import { UsersService } from '../../users/users.service';
+import { UserRole } from '../../users/enums/user-role.enum';
 
 export interface JwtPayload {
   sub: string;
@@ -53,3 +53,4 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return { id: user.id, email: user.email, role: user.role };
   }
 }
+

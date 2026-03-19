@@ -2,10 +2,10 @@ import * as nodemailer from 'nodemailer';
 import {
   MailProvider,
   SendMailOptions,
-} from '../interfaces/mail-provider.interface.js';
+} from '../interfaces/mail-provider.interface';
 import { Logger } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
-import type smtpConfig from '../../config/smtp.config.js';
+import type smtpConfig from '../../config/smtp.config';
 
 export class SmtpMailProvider implements MailProvider {
   private transporter: nodemailer.Transporter;
@@ -51,3 +51,4 @@ export class SmtpMailProvider implements MailProvider {
     }
   }
 }
+

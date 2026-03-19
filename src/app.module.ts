@@ -3,24 +3,24 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { AuthModule } from './modules/auth/auth.module.js';
-import { UsersModule } from './modules/users/users.module.js';
-import { RedisModule } from './common/redis/redis.module.js';
-import { MailModule } from './common/mail/mail.module.js';
-import { WalletModule } from './modules/wallet/wallet.module.js';
-import { TransactionsModule } from './modules/transactions/transactions.module.js';
-import { FxModule } from './modules/fx/fx.module.js';
-import { AnalyticsModule } from './modules/analytics/analytics.module.js';
-import { envValidationSchema } from './common/config/env.validation.js';
-import databaseConfig from './common/config/database.config.js';
-import authConfig from './common/config/auth.config.js';
-import fxConfig from './common/config/fx.config.js';
-import appConfig from './common/config/app.config.js';
-import redisConfig from './common/config/redis.config.js';
-import smtpConfig from './common/config/smtp.config.js';
-import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
-import { RolesGuard } from './modules/auth/guards/roles.guard.js';
-import { UserActivityInterceptor } from './common/interceptors/user-activity.interceptor.js';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { RedisModule } from './common/redis/redis.module';
+import { MailModule } from './common/mail/mail.module';
+import { WalletModule } from './modules/wallet/wallet.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
+import { FxModule } from './modules/fx/fx.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { envValidationSchema } from './common/config/env.validation';
+import databaseConfig from './common/config/database.config';
+import authConfig from './common/config/auth.config';
+import fxConfig from './common/config/fx.config';
+import appConfig from './common/config/app.config';
+import redisConfig from './common/config/redis.config';
+import smtpConfig from './common/config/smtp.config';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { RolesGuard } from './modules/auth/guards/roles.guard';
+import { UserActivityInterceptor } from './common/interceptors/user-activity.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
@@ -88,3 +88,4 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
   ],
 })
 export class AppModule {}
+

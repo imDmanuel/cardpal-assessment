@@ -7,8 +7,8 @@ import {
   Index,
 } from 'typeorm';
 import Decimal from 'decimal.js';
-import { Currency } from '../../wallet/enums/currency.enum.js';
-import { DecimalTransformer } from '../../../common/transformers/decimal.transformer.js';
+import { Currency } from '../../wallet/enums/currency.enum';
+import { DecimalTransformer } from '../../../common/transformers/decimal.transformer';
 
 @Entity('fx_rates')
 @Index(['base', 'quote', 'fetchedAt'])
@@ -46,3 +46,4 @@ export class FxRate {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+

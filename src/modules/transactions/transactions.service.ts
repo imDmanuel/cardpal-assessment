@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions } from 'typeorm';
-import { Transaction } from './entities/transaction.entity.js';
-import { TransactionType } from './enums/transaction-type.enum.js';
+import { Transaction } from './entities/transaction.entity';
+import { TransactionType } from './enums/transaction-type.enum';
 
 @Injectable()
 export class TransactionsService {
@@ -54,3 +54,4 @@ export class TransactionsService {
     }
   }
 }
+

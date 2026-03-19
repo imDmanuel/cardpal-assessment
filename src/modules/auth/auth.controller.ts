@@ -6,7 +6,7 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import { Public } from '../../common/decorators/public.decorator.js';
+import { Public } from '../../common/decorators/public.decorator';
 import {
   ApiTags,
   ApiOperation,
@@ -50,6 +50,7 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 600000 } }) // 5 attempts per 10 minutes
   @Public()
   @Post('verify')
   @HttpCode(HttpStatus.OK)
@@ -95,3 +96,4 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 }
+

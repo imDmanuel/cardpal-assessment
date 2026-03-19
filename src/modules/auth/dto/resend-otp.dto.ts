@@ -6,3 +6,4 @@ export class ResendOtpDto {
   @IsEmail()
   email: string;
 }
+

@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { AppModule } from './app.module.js';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
-import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
+import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -44,3 +44,4 @@ async function bootstrap() {
   logger.log(`Application is running on: http://localhost:${port}/api/docs`);
 }
 void bootstrap();
+

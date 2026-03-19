@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { UsersService } from '../../modules/users/users.service.js';
+import { UsersService } from '../../modules/users/users.service';
 
 @Injectable()
 export class UserActivityInterceptor implements NestInterceptor {
@@ -35,3 +35,4 @@ export class UserActivityInterceptor implements NestInterceptor {
     return next.handle();
   }
 }
+

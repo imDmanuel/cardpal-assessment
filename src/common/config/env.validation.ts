@@ -11,7 +11,9 @@ export const envValidationSchema = Joi.object({
 
   // JWT
   JWT_SECRET: Joi.string().required(),
-  JWT_EXPIRES_IN: Joi.string().default('7d'),
+  JWT_EXPIRES_IN: Joi.string().default('15m'),
+  JWT_REFRESH_SECRET: Joi.string().required(),
+  JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
 
   // Redis
   REDIS_URL: Joi.string().uri().required(),
@@ -23,6 +25,11 @@ export const envValidationSchema = Joi.object({
   SMTP_PASS: Joi.string().required(),
   SUPERADMIN_EMAIL: Joi.string().email().optional(),
 
+  // Admin Bootstrapping
+  ADMIN_EMAIL: Joi.string().email().required(),
+  ADMIN_PASSWORD: Joi.string().required(),
+  SEED_ADMIN: Joi.boolean().default(false),
+
   // FX API
   FX_API_KEY: Joi.string().required(),
   FX_API_URL: Joi.string().uri().required(),
@@ -33,3 +40,4 @@ export const envValidationSchema = Joi.object({
     .default('development'),
   PORT: Joi.number().default(3000),
 });
+

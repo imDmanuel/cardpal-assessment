@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, MoreThanOrEqual } from 'typeorm';
-import { FxRate } from '../fx/entities/fx-rate.entity.js';
-import { Transaction } from '../transactions/entities/transaction.entity.js';
-import { User } from '../users/entities/user.entity.js';
-import { Currency } from '../wallet/enums/currency.enum.js';
-import { TransactionType } from '../transactions/enums/transaction-type.enum.js';
+import { FxRate } from '../fx/entities/fx-rate.entity';
+import { Transaction } from '../transactions/entities/transaction.entity';
+import { User } from '../users/entities/user.entity';
+import { Currency } from '../wallet/enums/currency.enum';
+import { TransactionType } from '../transactions/enums/transaction-type.enum';
 
 @Injectable()
 export class AnalyticsService {
@@ -122,3 +122,4 @@ export class AnalyticsService {
     };
   }
 }
+

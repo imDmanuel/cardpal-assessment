@@ -7,19 +7,20 @@ import {
 } from '@nestjs/common';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UsersService } from '../users/users.service.js';
-import { RedisService } from '../../common/redis/redis.service.js';
-import { MailService } from '../../common/mail/mail.service.js';
+import { UsersService } from '../users/users.service';
+import { RedisService } from '../../common/redis/redis.service';
+import { MailService } from '../../common/mail/mail.service';
 import { type ConfigType } from '@nestjs/config';
-import authConfig from '../../common/config/auth.config.js';
-import appConfig from '../../common/config/app.config.js';
-import { UserRole } from '../users/enums/user-role.enum.js';
+import authConfig from '../../common/config/auth.config';
+import appConfig from '../../common/config/app.config';
+import { UserRole } from '../users/enums/user-role.enum';
 import { DataSource } from 'typeorm';
-import { WalletService } from '../wallet/wallet.service.js';
-import { RegisterDto } from './dto/register.dto.js';
-import { LoginDto } from './dto/login.dto.js';
-import { VerifyOtpDto } from './dto/verify-otp.dto.js';
-import { ResendOtpDto } from './dto/resend-otp.dto.js';
+import { WalletService } from '../wallet/wallet.service';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { ResendOtpDto } from './dto/resend-otp.dto';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -158,7 +159,7 @@ export class AuthService {
   }
 
   private generateOtp(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return randomInt(100000, 999999).toString();
   }
 
   private async updateRefreshTokenHash(
@@ -243,3 +244,4 @@ export class AuthService {
     };
   }
 }
+

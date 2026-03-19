@@ -8,3 +8,4 @@ export interface SendMailOptions {
 export interface MailProvider {
   sendMail(options: SendMailOptions): Promise<void>;
 }
+

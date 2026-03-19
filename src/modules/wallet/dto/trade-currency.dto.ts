@@ -7,7 +7,7 @@ import {
   IsDefined,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Currency } from '../enums/currency.enum.js';
+import { Currency } from '../enums/currency.enum';
 
 export class TradeCurrencyDto {
   @ApiProperty({ enum: Currency, example: Currency.NGN })
@@ -38,3 +38,4 @@ export class TradeCurrencyDto {
   @IsDefined({ message: 'Source and destination currencies must be different' })
   readonly sameCurrencyCheck?: never;
 }
+

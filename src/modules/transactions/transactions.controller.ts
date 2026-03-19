@@ -5,10 +5,10 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
-import { TransactionsService } from './transactions.service.js';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
-import { GetUser } from '../../common/decorators/get-user.decorator.js';
-import { GetTransactionsDto } from './dto/get-transactions.dto.js';
+import { TransactionsService } from './transactions.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { GetUser } from '../../common/decorators/get-user.decorator';
+import { GetTransactionsDto } from './dto/get-transactions.dto';
 
 @ApiTags('Transactions')
 @ApiBearerAuth()
@@ -27,3 +27,4 @@ export class TransactionsController {
     return this.transactionsService.findAll(userId, dto);
   }
 }
+

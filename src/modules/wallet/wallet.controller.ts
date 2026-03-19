@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
-import { WalletService } from './wallet.service.js';
-import { FundWalletDto } from './dto/fund-wallet.dto.js';
-import { ConvertCurrencyDto } from './dto/convert-currency.dto.js';
-import { TradeCurrencyDto } from './dto/trade-currency.dto.js';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
-import { GetUser } from '../../common/decorators/get-user.decorator.js';
+import { WalletService } from './wallet.service';
+import { FundWalletDto } from './dto/fund-wallet.dto';
+import { ConvertCurrencyDto } from './dto/convert-currency.dto';
+import { TradeCurrencyDto } from './dto/trade-currency.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -63,3 +63,4 @@ export class WalletController {
     return this.walletService.trade(userId, dto);
   }
 }
+

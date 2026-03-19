@@ -7,10 +7,10 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
-import { FxService } from './fx.service.js';
-import { Currency } from '../wallet/enums/currency.enum.js';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
-import { FxRatesResponseDto } from './dto/fx-rates-response.dto.js';
+import { FxService } from './fx.service';
+import { Currency } from '../wallet/enums/currency.enum';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FxRatesResponseDto } from './dto/fx-rates-response.dto';
 
 @ApiTags('FX')
 @ApiBearerAuth()
@@ -36,3 +36,4 @@ export class FxController {
     return this.fxService.getRates(base);
   }
 }
+

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Currency } from '../../wallet/enums/currency.enum.js';
+import { Currency } from '../../wallet/enums/currency.enum';
 
 export class GetFxTrendsDto {
   @ApiProperty({
@@ -50,3 +50,4 @@ export class GetFxTrendsDto {
   @Min(1)
   limit?: number = 100;
 }
+

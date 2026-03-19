@@ -9,9 +9,9 @@ import {
   JoinColumn,
 } from 'typeorm';
 import Decimal from 'decimal.js';
-import { User } from '../../users/entities/user.entity.js';
-import { Currency } from '../enums/currency.enum.js';
-import { DecimalTransformer } from '../../../common/transformers/decimal.transformer.js';
+import { User } from '../../users/entities/user.entity';
+import { Currency } from '../enums/currency.enum';
+import { DecimalTransformer } from '../../../common/transformers/decimal.transformer';
 
 @Entity('wallets')
 @Index(['userId', 'currency'], { unique: true })
@@ -47,3 +47,4 @@ export class Wallet {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+

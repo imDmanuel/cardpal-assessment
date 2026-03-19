@@ -9,16 +9,16 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, EntityManager, DataSource } from 'typeorm';
 import Decimal from 'decimal.js';
-import { Wallet } from './entities/wallet.entity.js';
-import { Currency } from './enums/currency.enum.js';
-import { FundWalletDto } from './dto/fund-wallet.dto.js';
-import { Transaction } from '../transactions/entities/transaction.entity.js';
-import { TransactionType } from '../transactions/enums/transaction-type.enum.js';
-import { TransactionStatus } from '../transactions/enums/transaction-status.enum.js';
+import { Wallet } from './entities/wallet.entity';
+import { Currency } from './enums/currency.enum';
+import { FundWalletDto } from './dto/fund-wallet.dto';
+import { Transaction } from '../transactions/entities/transaction.entity';
+import { TransactionType } from '../transactions/enums/transaction-type.enum';
+import { TransactionStatus } from '../transactions/enums/transaction-status.enum';
 
-import { TradeCurrencyDto } from './dto/trade-currency.dto.js';
-import { ConvertCurrencyDto } from './dto/convert-currency.dto.js';
-import { FxService } from '../fx/fx.service.js';
+import { TradeCurrencyDto } from './dto/trade-currency.dto';
+import { ConvertCurrencyDto } from './dto/convert-currency.dto';
+import { FxService } from '../fx/fx.service';
 
 @Injectable()
 export class WalletService {
@@ -276,3 +276,4 @@ export class WalletService {
     }
   }
 }
+

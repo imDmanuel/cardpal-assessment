@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive, IsEnum } from 'class-validator';
-import { Currency } from '../enums/currency.enum.js';
+import { Currency } from '../enums/currency.enum';
 
 export class FundWalletDto {
   @ApiProperty({ example: 1000, description: 'Amount to fund' })
@@ -18,3 +18,4 @@ export class FundWalletDto {
   @IsNotEmpty()
   idempotencyKey: string;
 }
+

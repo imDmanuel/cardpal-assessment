@@ -3,7 +3,7 @@ import type { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { Request } from 'express';
-import authConfig from '../../../common/config/auth.config.js';
+import authConfig from '../../../common/config/auth.config';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
@@ -32,3 +32,4 @@ export class JwtRefreshStrategy extends PassportStrategy(
     return { ...payload, refreshToken };
   }
 }
+

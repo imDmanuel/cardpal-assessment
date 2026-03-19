@@ -1,7 +1,7 @@
 import { IsOptional, IsEnum, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { TransactionType } from '../../transactions/enums/transaction-type.enum.js';
+import { TransactionType } from '../../transactions/enums/transaction-type.enum';
 
 export class GetTransactionsDto {
   @ApiPropertyOptional({ minimum: 1, default: 1 })
@@ -23,3 +23,4 @@ export class GetTransactionsDto {
   @IsEnum(TransactionType)
   type?: TransactionType;
 }
+

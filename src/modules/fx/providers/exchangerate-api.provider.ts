@@ -7,9 +7,9 @@ import {
 import { HttpService } from '@nestjs/axios';
 import { type ConfigType } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-import fxConfig from '../../../common/config/fx.config.js';
-import { type IExchangeRateProvider } from '../interfaces/exchange-rate-provider.interface.js';
-import { Currency } from '../../wallet/enums/currency.enum.js';
+import fxConfig from '../../../common/config/fx.config';
+import { type IExchangeRateProvider } from '../interfaces/exchange-rate-provider.interface';
+import { Currency } from '../../wallet/enums/currency.enum';
 
 interface ExchangeRateApiResponse {
   result: string;
@@ -68,3 +68,4 @@ export class ExchangeRateApiProvider implements IExchangeRateProvider {
     }
   }
 }
+

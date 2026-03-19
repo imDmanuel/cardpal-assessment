@@ -8,13 +8,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { type ConfigType } from '@nestjs/config';
 import Decimal from 'decimal.js';
-import fxConfig from '../../common/config/fx.config.js';
-import { RedisService } from '../../common/redis/redis.service.js';
-import { FxRate } from './entities/fx-rate.entity.js';
-import { Currency } from '../wallet/enums/currency.enum.js';
-import { type IFxRatesResponse } from './interfaces/fx-rate.interface.js';
-import { EXCHANGE_RATE_PROVIDER } from './constants/fx.constants.js';
-import { type IExchangeRateProvider } from './interfaces/exchange-rate-provider.interface.js';
+import fxConfig from '../../common/config/fx.config';
+import { RedisService } from '../../common/redis/redis.service';
+import { FxRate } from './entities/fx-rate.entity';
+import { Currency } from '../wallet/enums/currency.enum';
+import { type IFxRatesResponse } from './interfaces/fx-rate.interface';
+import { EXCHANGE_RATE_PROVIDER } from './constants/fx.constants';
+import { type IExchangeRateProvider } from './interfaces/exchange-rate-provider.interface';
 
 interface CachedFxData {
   rates: Record<string, number>;
@@ -208,3 +208,4 @@ export class FxService {
     }
   }
 }
+

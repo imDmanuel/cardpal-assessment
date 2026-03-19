@@ -7,10 +7,10 @@ import {
   Unique,
 } from 'typeorm';
 import Decimal from 'decimal.js';
-import { TransactionType } from '../enums/transaction-type.enum.js';
-import { TransactionStatus } from '../enums/transaction-status.enum.js';
-import { Currency } from '../../wallet/enums/currency.enum.js';
-import { DecimalTransformer } from '../../../common/transformers/decimal.transformer.js';
+import { TransactionType } from '../enums/transaction-type.enum';
+import { TransactionStatus } from '../enums/transaction-status.enum';
+import { Currency } from '../../wallet/enums/currency.enum';
+import { DecimalTransformer } from '../../../common/transformers/decimal.transformer';
 
 @Entity('transactions')
 @Unique(['userId', 'idempotencyKey'])
@@ -81,3 +81,4 @@ export class Transaction {
   @CreateDateColumn()
   createdAt: Date;
 }
+

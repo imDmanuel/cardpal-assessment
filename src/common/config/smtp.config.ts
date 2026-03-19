@@ -7,3 +7,4 @@ export default registerAs('smtp', () => ({
   pass: process.env.SMTP_PASS,
   from: process.env.SMTP_FROM || '"CardPal Auth" <noreply@cardpal.com>',
 }));
+

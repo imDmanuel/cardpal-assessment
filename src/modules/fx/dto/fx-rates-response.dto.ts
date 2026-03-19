@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Currency } from '../../wallet/enums/currency.enum.js';
+import { Currency } from '../../wallet/enums/currency.enum';
 
 export class FxRatesResponseDto {
   @ApiProperty({ enum: Currency, example: Currency.USD })
@@ -20,3 +20,4 @@ export class FxRatesResponseDto {
   @ApiProperty()
   stale: boolean;
 }
+

@@ -24,3 +24,4 @@ export class UsersController {
     return this.usersService.promoteUser(id);
   }
 }
+

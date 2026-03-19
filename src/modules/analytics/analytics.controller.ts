@@ -5,17 +5,17 @@ import {
   BadRequestException,
   UseGuards,
 } from '@nestjs/common';
-import { AnalyticsService } from './analytics.service.js';
-import { Roles } from '../../common/decorators/roles.decorator.js';
-import { UserRole } from '../users/enums/user-role.enum.js';
+import { AnalyticsService } from './analytics.service';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { UserRole } from '../users/enums/user-role.enum';
 import {
   ApiTags,
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
-import { GetFxTrendsDto } from './dto/get-fx-trends.dto.js';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { GetFxTrendsDto } from './dto/get-fx-trends.dto';
 
 @ApiTags('Analytics')
 @ApiBearerAuth()
@@ -50,3 +50,4 @@ export class AnalyticsController {
     return this.analyticsService.getActivitySummary();
   }
 }
+
